@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gigaevo"
-version = "0.0.0"
+version = "1.11.1"
 description = "Advanced evolutionary computation framework with MAP-Elites and DAG-based program execution"
 authors = [
-    {name = "GigaEvo Team", email = "khrulkov.v@gmail.com"}
+    {name = "GigaEvo Team", email = "team@gigaevo.ai"}
 ]
 readme = "README.md"
 license = {text = "MIT"}
@@ -31,6 +31,7 @@ dependencies = [
     "wandb",
     "cloudpickle",
     "matplotlib",
+    "pandas==2.2.2",
     "seaborn",
     "tensorboardX",
     "python-dotenv",
@@ -45,7 +46,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pre-commit", "python-semantic-release"]
-opt = ["jax", "optax", "pandas==2.2.2"]
+opt = ["jax", "optax"]
 
 [project.urls]
 Repository = "https://github.com/gigaevo/gigaevo"

@@ -4,6 +4,7 @@ from __future__ import annotations
 from contextlib import redirect_stderr, redirect_stdout
 import io
 import linecache
+import os
 from pathlib import Path
 import sys
 import traceback
@@ -37,6 +38,17 @@ def _prepend_sys_path(paths: list[str] | None) -> None:
     for p in paths:
         if p and p not in sys.path:
             sys.path.insert(0, str(Path(p).resolve()))
+
+
+def _ensure_cwd_in_path() -> None:
+    """
+    Ensure the current working directory is in sys.path.
+    This allows imports like 'import problems.some_module' when running
+    from the project root.
+    """
+    cwd = os.getcwd()
+    if cwd not in sys.path:
+        sys.path.insert(0, cwd)
 
 
 def _write_code_context(tb: BaseException, *, out: io.TextIOBase) -> None:
@@ -76,8 +88,9 @@ def _format_syntax_error(e: SyntaxError) -> str:
 def main() -> None:
     captured = io.StringIO()
     try:
-        payload_bytes = sys.stdin.buffer.read()
-        payload: dict[str, Any] = cloudpickle.loads(payload_bytes)
+        _ensure_cwd_in_path()
+
+        payload: dict[str, Any] = cloudpickle.load(sys.stdin.buffer)
 
         code: str = payload["code"]
         fn_name: str = payload["function_name"]
@@ -102,7 +115,8 @@ def main() -> None:
             sys.stderr.write(printed)
             sys.stderr.flush()
 
-        sys.stdout.buffer.write(cloudpickle.dumps(result))
+        cloudpickle.register_pickle_by_value(mod)
+        cloudpickle.dump(result, sys.stdout.buffer)
         sys.stdout.buffer.flush()
 
     except SyntaxError as e:
