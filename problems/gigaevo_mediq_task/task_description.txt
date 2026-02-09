@@ -1,0 +1,156 @@
+TASK DEFINITION – DIAGNOSTIC TELEMEDICINE CONSULTATION
+
+Challenge: Given an incomplete patient record and a multiple-choice medical question (A/B/C/D), the agent must conduct
+an interactive consultation to gather missing clinical information, then output exactly one final answer letter.
+
+The goal is to maximize diagnostic correctness while maintaining consultation efficiency.
+This is NOT a passive classification task — the agent must actively decide when to gather more information
+versus when sufficient evidence has been collected to make a confident diagnosis.
+
+
+OBJECTIVE
+
+Optimize a diagnostic agent that:
+1) Produces the correct final answer letter (A, B, C, or D) for each case
+2) Asks as few follow-up questions as possible without sacrificing correctness
+3) Uses tokens efficiently throughout the consultation
+4) Implements an explicit decision policy: gather more evidence vs commit to diagnosis
+
+Fitness is defined as diagnostic accuracy.
+Secondary behavioral descriptors (tokens_count) guide exploration.
+
+
+QUALITY CONSTRAINT (HARD GATE)
+
+The candidate must:
+- Return a valid final answer in {A, B, C, D} for every evaluated case
+- Keep the structure of the expert decision class (a subclass of Expert)
+
+Target: accuracy = 1.0 (perfect diagnostic correctness)
+
+
+WHAT CAN BE OPTIMIZED
+
+You are encouraged to:
+- Improve prompts from the expert_system dictionary, for example:
+    - Refine the system prompt and doctor persona to improve clinical reasoning
+    - Optimize question-generation prompts to:
+      * Focus on high-value missing information
+      * Avoid redundant or low-signal questions
+      * Generate medically relevant, atomic questions
+    - Modify final answer prompts to enforce strict output formatting
+- Adjust abstention/confidence strategy in your expert's decision logic (e.g., when to ask vs answer)
+- Restructure the consultation flow (e.g., hierarchical questioning, differential narrowing)
+- Improve early stopping logic when diagnosis becomes clear
+
+
+WHAT MUST BE PRESERVED
+
+- Usage of run_mediq(...) to execute evaluation over all cases
+- Input/output interface of the prediction entrypoint
+- Expert subclass structure and respond()/ask_question() interface
+- Deterministic behavior for the same patient data
+- Each question response must contain exactly one atomic question string
+- Final answer must be exactly one letter: A, B, C, or D (no additional text)
+- Questions must be medically relevant and non-repetitive
+- Expert must not hallucinate diagnoses outside the provided options
+
+
+FAILURE MODES
+
+Common reasons for invalid solutions:
+- respond() returns malformed dict (missing "type", wrong keys)
+- Invalid answer letter (not in {A, B, C, D})
+- Multiple questions in one turn or non-question text
+- Hallucinating diagnoses, procedures, or medical entities not in the answer options
+- Over-aggressive early stopping → premature wrong diagnosis
+- Overly conservative questioning → hitting question limit without accuracy gain
+- Breaking import structure or Expert interface
+
+Note on repairability:
+A solution that fails due to a superficial issue (e.g., dict key typo, missing import, minor prompt syntax)
+is preferable to a deeply conservative solution, if the core reasoning strategy is sound and easily repairable.
+
+The framework is forgiving of:
+- Prompt variations within expert_system dictionary and experimental phrasing
+- Novel question generation strategies
+
+The framework is NOT forgiving of:
+- Breaking the Expert subclass and entrypoint() interface contracts
+- Returning malformed output dictionaries
+- Invalid answer letters outside {A, B, C, D}
+
+
+HELPER FUNCTIONS AND FRAMEWORK
+
+Expert:
+- Expert – base class for decision strategies; concrete experts (e.g., BinaryExpert, ImplicitExpert, NumericalCutOffExpert, ScaleExpert) override respond() method
+- Expert method: ask_question(patient_state, prev_messages, task_prompt, question_generation_function)
+
+Concrete experts:
+- Each uses an abstention/decision function (binary YES/NO, implicit choice-or-question, numerical cutoff, or scale) to decide: ask or answer.
+- respond() returns {"type": "question", ...} or {"type": "choice", ...}.
+
+Patient simulation:
+- Patient responds based on their hidden medical record
+- Returns relevant facts in first person, or "I cannot answer this question"
+
+Framework execution:
+- run_mediq(ExpertSubclass) evaluates your expert on all cases
+- For each case: iteratively calls expert.respond(patient_state)
+- Continues until expert returns type="choice" or max questions reached
+- Returns (dialogues, diagnoses, case_ids) for validation
+
+Key utilities available:
+- question_generation(...) – generates atomic question from prompts
+- get_response(...) – calls LLM with prompt
+- expert_response_choice(...) – extracts answer letter from LLM output
+- parse_yes_no(...) – parses YES/NO confidence decisions
+
+
+EVALUATION DETAILS
+
+Evaluation process:
+1) Framework loads medical cases with incomplete patient information
+2) For each case, your expert conducts interactive consultation:
+   - Calls expert.respond(patient_state) to decide: ask question or answer?
+   - If asking: patient responds with relevant facts, state updates, repeat
+   - If answering: records final diagnosis, moves to next case
+3) Compares final diagnoses to ground truth labels
+4) Computes metrics
+
+Reported metrics:
+- fitness: diagnostic accuracy (fraction of correct final answers) - PRIMARY
+  * Range: 0.0 to 1.0, higher is better
+  * Target: 1.0 (perfect accuracy)
+- tokens_count: average doctor token usage per case
+  * Lower is better (efficiency)
+
+
+OUTPUT FORMAT
+
+Your program must modify an expert_system dictionary and the expert's abstention/decision strategy (while preserving the Expert/entrypoint interfaces).
+The framework evaluates by calling entrypoint(), which runs your expert on all cases and returns results.
+
+
+KEY INSIGHT
+
+This is not a pure classification problem, but an active learning and decision-making problem.
+The agent must balance:
+- Information gain (asking questions to reduce diagnostic uncertainty)
+- Efficiency (avoiding unnecessary questions and token usage)
+- Risk (committing to a diagnosis with incomplete information)
+
+The best solutions adaptively decide when to gather more evidence versus when to commit to a diagnosis,
+using confidence estimation and strategic questioning to minimize consultation length while maximizing correctness.
+
+
+EXPLORATION NOTE
+
+Multiple strategic approaches are expected to coexist:
+- Conservative strategies (ask more questions, higher accuracy ceiling, higher cost)
+- Aggressive strategies (fewer questions, risk of premature diagnosis, lower cost)
+- Adaptive strategies (confidence-based, balance accuracy and efficiency)
+
+Do not converge prematurely on a single strategy.
+Diverse decision policies are valuable, even if some are temporarily suboptimal.
