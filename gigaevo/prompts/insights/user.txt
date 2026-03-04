@@ -1,0 +1,17 @@
+Analyze this program and extract 3-{max_insights} insights to guide the next mutation.
+
+PROGRAM:
+```python
+{code}
+```
+
+CURRENT METRICS: {metrics}
+
+ERRORS: {error_section}
+
+---
+
+For each insight, answer:
+1. **What** pattern/value exists? (cite line numbers, variable names, literals)
+2. **Why** does it help or hurt the metric? (causal mechanism)
+3. **What** should the mutation agent do? (preserve, remove, tune, replace, add)
