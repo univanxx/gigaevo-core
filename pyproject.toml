@@ -11,7 +11,7 @@ authors = [
 ]
 readme = "README.md"
 license = {text = "MIT"}
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 
 dependencies = [
     "redis>=4.5.0",
@@ -42,6 +42,8 @@ dependencies = [
     "langchain-openai>=0.2.0",
     "langchain>=0.3.0",
     "langfuse>=2.0.0",
+    "vllm>=0.6.0",
+    "huggingface_hub>=0.20.0",
 ]
 
 [project.optional-dependencies]

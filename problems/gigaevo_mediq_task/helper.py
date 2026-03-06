@@ -517,3 +517,148 @@ def run_mediq(expert_class) -> Tuple[List, List[str], List[int], List[str]]:
         ground_truth.append(sample["answer_idx"])  # Store correct answer
     
     return dialogues, diagnoses, case_ids, ground_truth
+
+
+##### SELF-CONSISTENCY #####
+### BINARY ###
+# def expert_response_yes_no(messages, **kwargs):
+#     """
+#     Binary Abstain
+#     """
+#     log_info(f"++++++++++++++++++++ Start of YES/NO Decision [py:expert_response_yes_no()] ++++++++++++++++++++")
+#     log_info(f"[<YES/NO PROMPT>] [len(messages)={len(messages)}] (messages[-1]):\n{messages[-1]['content']}")
+
+#     yes_no_responses, response_texts = [], {}
+#     for i in range(1):
+#         log_info(f"-------------------- Self-Consistency Iteration {i+1} --------------------")
+#         response_text = get_response(messages, **kwargs)
+#         if not response_text: 
+#             log_info("[<YES/NO LM RES>]: " + "No response.")
+#         log_info("[<YES/NO LM RES>]: " + response_text)
+
+#         yes_choice = parse_yes_no(response_text)
+#         log_info("[<YES/NO PARSED>]: " + yes_choice)
+#         yes_no_responses.append(yes_choice)
+#         response_texts[yes_choice] = response_text
+    
+#     if yes_no_responses.count("YES") > yes_no_responses.count("NO"):
+#         yes_choice = "YES"
+#     else:
+#         yes_choice = "NO"
+#     confidence = yes_no_responses.count("YES") / len(yes_no_responses)
+#     log_info(f"[<YES/NO RETURN>]: yes_choice: {yes_choice}, confidence: {confidence}")
+#     return response_texts[yes_choice], yes_choice, confidence
+
+### IMPLICIT ###
+# def expert_response_choice_or_question(messages, options_dict, **kwargs):
+#     """
+#     Implicit Abstain
+#     """
+#     log_info(f"++++++++++++++++++++ Start of Implicit Abstention [py:expert_response_choice_or_question()] ++++++++++++++++++++")
+#     log_info(f"[<IMPLICIT ABSTAIN PROMPT>] [len(messages)={len(messages)}] (messages[-1]):\n{messages[-1]['content']}")
+#     answers, questions, response_texts = [], [], {}
+#     for i in range(3):
+#         log_info(f"-------------------- Self-Consistency Iteration {i+1} --------------------")
+#         response_text = get_response(messages, **kwargs)
+#         if not response_text: 
+#             log_info("[<IMPLICIT ABSTAIN LM RES>]: " + "No response --> Re-prompt")
+#             continue
+#         log_info("[<IMPLICIT ABSTAIN LM RES>]: " + response_text)
+#         response_text = response_text.replace("Confident --> Answer: ", "").replace("Not confident --> Doctor Question: ", "")
+
+#         if "?" not in response_text:
+#             letter_choice = parse_choice(response_text, options_dict)
+#             if letter_choice:
+#                 log_info("[<IMPLICIT ABSTAIN PARSED>]: " + letter_choice)
+#                 answers.append(letter_choice)
+#                 response_texts[letter_choice] = response_text
+#         else:
+#             # not a choice, parse as question
+#             atomic_question = parse_atomic_question(response_text)
+#             if atomic_question:
+#                 log_info("[<IMPLICIT ABSTAIN PARSED>]: " + atomic_question)
+#                 questions.append(atomic_question)
+#                 response_texts[atomic_question] = response_text
+            
+#             else:
+#                 log_info("[<IMPLICIT ABSTAIN PARSED>]: " + "FAILED TO PARSE --> Re-prompt")
+
+#     if len(answers) + len(questions) == 0:
+#         log_info("[<IMPLICIT ABSTAIN SC-PARSED>]: " + "No response.")
+#         return "No response.", None, None, 0.0
+
+#     conf_score = len(answers) / (len(answers) + len(questions))
+#     if len(answers) > len(questions): 
+#         final_answer = max(set(answers), key = answers.count)
+#         response_text = response_texts[final_answer]
+#         atomic_question = None
+#     else:
+#         final_answer = None
+#         rand_id = random.choice(range(len(questions)))
+#         atomic_question = questions[rand_id]
+#         response_text = response_texts[atomic_question]
+#     log_info(f"[<IMPLICIT ABSTAIN RETURN>]: atomic_question: {atomic_question}, final_answer: {final_answer}, conf_score: {conf_score} ([{len(answers)} : {len(questions)}])")
+#     return response_text, atomic_question, final_answer, conf_score
+
+### NUMERICAL ###
+# def expert_response_confidence_score(messages, **kwargs):
+#     """
+#     Numerical Abstain
+#     """
+#     log_info(f"++++++++++++++++++++ Start of Numerical Confidence Score [py:expert_response_confidence_score()] ++++++++++++++++++++")
+#     log_info(f"[<CONF SCORE PROMPT>] [len(messages)={len(messages)}] (messages[-1]):\n{messages[-1]['content']}")
+
+#     conf_scores, response_texts = [], {}
+#     for i in range(3):
+#         log_info(f"-------------------- Self-Consistency Iteration {i+1} --------------------")
+#         response_text = get_response(messages, **kwargs)
+#         if not response_text: 
+#             log_info("[<CONF SCORE LM RES>]: " + "No response.")
+#             continue
+#         log_info("[<CONF SCORE LM RES>]: " + response_text)
+
+#         conf_score = parse_confidence_score(response_text)
+#         conf_scores.append(conf_score)
+#         response_texts[conf_score] = response_text
+#         log_info(f"[<CONF SCORE PARSED>]: {conf_score}")
+    
+#     if len(conf_scores) > 0:
+#         avg_conf_score = sum(conf_scores) / len(conf_scores)
+#         # response_text = "CONFIDENCE SCORE: " + str(avg_conf_score)
+#         temp = [abs(r - avg_conf_score) for r in conf_scores]
+#         response_text = response_texts[conf_scores[temp.index(min(temp))]]
+#     else:
+#         avg_conf_score, response_text = 0, "No response."
+#     log_info(f"[<CONF SCORE RETURN>] (average conf score): {avg_conf_score}")
+#     return response_text, avg_conf_score
+
+### SCALE ###
+# def expert_response_scale_score(messages, **kwargs):
+#     """
+#     Scale Abstain
+#     """
+#     log_info(f"++++++++++++++++++++ Start of Scale Confidence Score [py:expert_response_scale_score()] ++++++++++++++++++++")
+#     log_info(f"[<SCALE SCORE PROMPT>] [len(messages)={len(messages)}] (messages[-1]):\n{messages[-1]['content']}")
+
+#     conf_scores, response_texts = [], {}
+#     for i in range(3):
+#         log_info(f"-------------------- Self-Consistency Iteration {i+1} --------------------")
+#         response_text = get_response(messages, **kwargs)
+#         if not response_text:
+#             log_info("[<SCALE SCORE LM RES>]: " + "No response.")
+#             continue
+#         log_info("[<SCALE SCORE LM RES>]: " + response_text)
+
+#         conf_score = parse_likert_scale(response_text)
+#         conf_scores.append(conf_score)
+#         response_texts[conf_score] = response_text
+#         log_info("[<SCALE SCORE PARSED>]: " + str(conf_score))
+    
+#     if len(conf_scores) > 0:
+#         avg_conf_score = sum(conf_scores) / len(conf_scores)
+#         temp = [abs(r - avg_conf_score) for r in conf_scores]
+#         response_text = response_texts[conf_scores[temp.index(min(temp))]]
+#     else:
+#         avg_conf_score, response_text = 0, "No response."
+#     log_info(f"[<SCALE SCORE RETURN>] (average conf score]): {avg_conf_score}")
+#     return response_text, avg_conf_score

@@ -1,0 +1,904 @@
+ib/python3.11/asyncio/__init__.py'>
+
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/asyncio/tasks.py", line 476, in wait_for
+    await waiter
+          └ <Future cancelled>
+
+asyncio.exceptions.CancelledError
+
+
+The above exception was the direct cause of the following exception:
+
+
+Traceback (most recent call last):
+
+  File "/media/ssd-3t/isviridov/alphaevolve/gigaevo-core/run.py", line 141, in <module>
+    main()
+    └ <function main at 0x7cf1c19c04a0>
+
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/site-packages/hydra/main.py", line 94, in decorated_main
+    _run_hydra(
+    └ <function _run_hydra at 0x7cf32a5a4220>
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/site-packages/hydra/_internal/utils.py", line 394, in _run_hydra
+    _run_app(
+    └ <function _run_app at 0x7cf32a5a42c0>
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/site-packages/hydra/_internal/utils.py", line 457, in _run_app
+    run_and_report(
+    └ <function run_and_report at 0x7cf32a5a4180>
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/site-packages/hydra/_internal/utils.py", line 220, in run_and_report
+    return func()
+           └ <function _run_app.<locals>.<lambda> at 0x7cf1c19c3f60>
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/site-packages/hydra/_internal/utils.py", line 458, in <lambda>
+    lambda: hydra.run(
+            │     └ <function Hydra.run at 0x7cf32a452b60>
+            └ <hydra._internal.hydra.Hydra object at 0x7cf1c1eeff50>
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/site-packages/hydra/_internal/hydra.py", line 119, in run
+    ret = run_job(
+          └ <function run_job at 0x7cf32a74b1a0>
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/site-packages/hydra/core/utils.py", line 186, in run_job
+    ret.return_value = task_function(task_cfg)
+    │   │              │             └ {'stage_timeout': 480, 'dag_timeout': 720, 'dag_concurrency': 4, 'max_code_length': 30000, 'max_insights': 8, 'redis_max_conn...
+    │   │              └ <function main at 0x7cf1c19c0400>
+    │   └ <property object at 0x7cf32a707ba0>
+    └ JobReturn(overrides=['problem.name=gigaevo_mediq_task', 'redis.port=44004', 'llm_base_url=https://inference.airi.net:46783/v1...
+
+  File "/media/ssd-3t/isviridov/alphaevolve/gigaevo-core/run.py", line 136, in main
+    asyncio.run(run_experiment(cfg))
+    │       │   │              └ {'stage_timeout': 480, 'dag_timeout': 720, 'dag_concurrency': 4, 'max_code_length': 30000, 'max_insights': 8, 'redis_max_conn...
+    │       │   └ <function run_experiment at 0x7cf32c1244a0>
+    │       └ <function run at 0x7cf32ae08d60>
+    └ <module 'asyncio' from '/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/asyncio/__init__.py'>
+
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           │      │   └ <coroutine object run_experiment at 0x7cf1c18dd940>
+           │      └ <function Runner.run at 0x7cf32ae98e00>
+           └ <asyncio.runners.Runner object at 0x7cf1c1eefe10>
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           │    │     │                  └ <Task pending name='Task-1' coro=<run_experiment() running at /media/ssd-3t/isviridov/alphaevolve/gigaevo-core/run.py:96> wai...
+           │    │     └ <function BaseEventLoop.run_until_complete at 0x7cf32ae96980>
+           │    └ <_UnixSelectorEventLoop running=True closed=False debug=False>
+           └ <asyncio.runners.Runner object at 0x7cf1c1eefe10>
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/asyncio/base_events.py", line 641, in run_until_complete
+    self.run_forever()
+    │    └ <function BaseEventLoop.run_forever at 0x7cf32ae968e0>
+    └ <_UnixSelectorEventLoop running=True closed=False debug=False>
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/asyncio/base_events.py", line 608, in run_forever
+    self._run_once()
+    │    └ <function BaseEventLoop._run_once at 0x7cf32ae98720>
+    └ <_UnixSelectorEventLoop running=True closed=False debug=False>
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/asyncio/base_events.py", line 1936, in _run_once
+    handle._run()
+    │      └ <function Handle._run at 0x7cf32afe60c0>
+    └ <Handle Task.task_wakeup(<Future finished result=None>)>
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/asyncio/events.py", line 84, in _run
+    self._context.run(self._callback, *self._args)
+    │    │            │    │           │    └ <member '_args' of 'Handle' objects>
+    │    │            │    │           └ <Handle Task.task_wakeup(<Future finished result=None>)>
+    │    │            │    └ <member '_callback' of 'Handle' objects>
+    │    │            └ <Handle Task.task_wakeup(<Future finished result=None>)>
+    │    └ <member '_context' of 'Handle' objects>
+    └ <Handle Task.task_wakeup(<Future finished result=None>)>
+
+  File "/media/ssd-3t/isviridov/alphaevolve/gigaevo-core/gigaevo/programs/dag/dag.py", line 290, in _run_stage
+    return await stage.execute(program)
+                 │     │       └ Program(id='e94f17bb-3962-43f3-9fe4-677d5018c575', code='from helper import (\n    Expert,\n    log_info_expert,\n    log_inf...
+                 │     └ <function Stage.execute at 0x7cf1c28e1b20>
+                 └ <gigaevo.programs.stages.python_executors.execution.CallProgramFunction object at 0x7cf1b83a16d0>
+
+> File "/media/ssd-3t/isviridov/alphaevolve/gigaevo-core/gigaevo/programs/stages/base.py", line 156, in execute
+    result = await asyncio.wait_for(self.compute(program), timeout=self.timeout)
+                   │       │        │    │       │                 │    └ 600
+                   │       │        │    │       │                 └ <gigaevo.programs.stages.python_executors.execution.CallProgramFunction object at 0x7cf1b83a16d0>
+                   │       │        │    │       └ Program(id='e94f17bb-3962-43f3-9fe4-677d5018c575', code='from helper import (\n    Expert,\n    log_info_expert,\n    log_inf...
+                   │       │        │    └ <function PythonCodeExecutor.compute at 0x7cf1c269ccc0>
+                   │       │        └ <gigaevo.programs.stages.python_executors.execution.CallProgramFunction object at 0x7cf1b83a16d0>
+                   │       └ <function wait_for at 0x7cf32ae7d620>
+                   └ <module 'asyncio' from '/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/asyncio/__init__.py'>
+
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/asyncio/tasks.py", line 502, in wait_for
+    raise exceptions.TimeoutError() from exc
+          │          └ <class 'TimeoutError'>
+          └ <module 'asyncio.exceptions' from '/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/asyncio/exceptions.py'>
+
+TimeoutError
+2026-02-06 23:48:17.904 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][e94f17bb] Collected result for 'CallProgramFunction': type=ProgramStageResult
+2026-02-06 23:48:17.904 | ERROR    | gigaevo.programs.dag.dag:_process_finished_task:353 | [DAG][e94f17bb] Stage 'CallProgramFunction' FAILED with exception.
+### ERROR SUMMARY ###:
+[CallProgramFunction] TimeoutError: TimeoutError()
+
+Traceback:
+Traceback (most recent call last):
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/asyncio/tasks.py", line 500, in wait_for
+    return fut.result()
+           ^^^^^^^^^^^^
+  File "/media/ssd-3t/isviridov/alphaevolve/gigaevo-core/gigaevo/programs/stages/python_executors/execution.py", line 86, in compute
+    value, stdout_bytes, stderr_text = await run_exec_runner(
+                                       ^^^^^^^^^^^^^^^^^^^^^^
+  File "/media/ssd-3t/isviridov/alphaevolve/gigaevo-core/gigaevo/programs/stages/python_executors/wrapper.py", line 105, in run_exec_runner
+    stdout, stderr = await asyncio.wait_for(
+                     ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/asyncio/tasks.py", line 476, in wait_for
+    await waiter
+asyncio.exceptions.CancelledError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/media/ssd-3t/isviridov/alphaevolve/gigaevo-core/gigaevo/programs/stages/base.py", line 156, in execute
+    result = await asyncio.wait_for(self.compute(program), timeout=self.timeout)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/asyncio/tasks.py", line 502, in wait_for
+    raise exceptions.TimeoutError() from exc
+TimeoutError
+
+NoneType: None
+2026-02-06 23:48:17.906 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][e94f17bb] Stage 'CallProgramFunction' FINALIZED as FAILED.
+2026-02-06 23:48:17.907 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][e94f17bb] Running=[] Launched=['AncestorProgramIds', 'CallProgramFunction', 'ComputeComplexityStage', 'DescendantProgramIds', 'ValidateCodeStage'] Finished=['AncestorProgramIds', 'CallProgramFunction', 'ComputeComplexityStage', 'DescendantProgramIds', 'ValidateCodeStage']
+2026-02-06 23:48:17.909 | INFO     | gigaevo.programs.dag.dag:_run_internal:162 | [DAG][e94f17bb] Stage 'CallValidatorFunction' AUTO-SKIPPED.
+2026-02-06 23:48:17.909 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][e94f17bb] Running=[] Launched=['AncestorProgramIds', 'CallProgramFunction', 'CallValidatorFunction', 'ComputeComplexityStage', 'DescendantProgramIds', 'ValidateCodeStage'] Finished=['AncestorProgramIds', 'CallProgramFunction', 'CallValidatorFunction', 'ComputeComplexityStage', 'DescendantProgramIds', 'ValidateCodeStage']
+2026-02-06 23:48:17.912 | INFO     | gigaevo.programs.dag.dag:_run_internal:162 | [DAG][e94f17bb] Stage 'MergeMetricsStage' AUTO-SKIPPED.
+2026-02-06 23:48:17.914 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][e94f17bb] Stage 'EnsureMetricsStage' STARTED.
+2026-02-06 23:48:17.914 | DEBUG    | gigaevo.programs.dag.dag:_launch_ready:294 | [DAG][e94f17bb] Launched stages: ['EnsureMetricsStage']
+2026-02-06 23:48:17.914 | INFO     | gigaevo.programs.stages.base:execute:152 | [EnsureMetricsStage] Executing for e94f17bb
+2026-02-06 23:48:17.914 | DEBUG    | gigaevo.programs.stages.metrics:compute:64 | [EnsureMetricsStage] Stored 3 validated metrics on program e94f17bb
+2026-02-06 23:48:17.914 | DEBUG    | gigaevo.programs.stages.base:execute:193 | [EnsureMetricsStage] ok in 0.00s
+2026-02-06 23:48:17.914 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][e94f17bb] Collected result for 'EnsureMetricsStage': type=ProgramStageResult
+2026-02-06 23:48:17.917 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][e94f17bb] Stage 'EnsureMetricsStage' FINALIZED as COMPLETED.
+2026-02-06 23:48:17.917 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][e94f17bb] Running=[] Launched=['AncestorProgramIds', 'CallProgramFunction', 'CallValidatorFunction', 'ComputeComplexityStage', 'DescendantProgramIds', 'EnsureMetricsStage', 'MergeMetricsStage', 'ValidateCodeStage'] Finished=['AncestorProgramIds', 'CallProgramFunction', 'CallValidatorFunction', 'ComputeComplexityStage', 'DescendantProgramIds', 'EnsureMetricsStage', 'MergeMetricsStage', 'ValidateCodeStage']
+2026-02-06 23:48:17.919 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][e94f17bb] Stage 'InsightsStage' STARTED.
+2026-02-06 23:48:17.919 | INFO     | gigaevo.programs.stages.base:execute:152 | [InsightsStage] Executing for e94f17bb
+2026-02-06 23:48:17.922 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][e94f17bb] Stage 'LineageStage' STARTED.
+2026-02-06 23:48:17.922 | DEBUG    | gigaevo.programs.dag.dag:_launch_ready:294 | [DAG][e94f17bb] Launched stages: ['InsightsStage', 'LineageStage']
+2026-02-06 23:48:17.922 | INFO     | gigaevo.programs.stages.base:execute:152 | [LineageStage] Executing for e94f17bb
+2026-02-06 23:48:18.923 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][e94f17bb] Running=['InsightsStage', 'LineageStage'] Launched=['AncestorProgramIds', 'CallProgramFunction', 'CallValidatorFunction', 'ComputeComplexityStage', 'DescendantProgramIds', 'EnsureMetricsStage', 'InsightsStage', 'LineageStage', 'MergeMetricsStage', 'ValidateCodeStage'] Finished=['AncestorProgramIds', 'CallProgramFunction', 'CallValidatorFunction', 'ComputeComplexityStage', 'DescendantProgramIds', 'EnsureMetricsStage', 'MergeMetricsStage', 'ValidateCodeStage']
+2026-02-06 23:48:31.414 | DEBUG    | gigaevo.programs.stages.base:execute:193 | [InsightsStage] ok in 13.50s
+2026-02-06 23:48:31.415 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][e94f17bb] Collected result for 'InsightsStage': type=ProgramStageResult
+2026-02-06 23:48:31.418 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][e94f17bb] Stage 'InsightsStage' FINALIZED as COMPLETED.
+2026-02-06 23:48:31.418 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][e94f17bb] Running=['LineageStage'] Launched=['AncestorProgramIds', 'CallProgramFunction', 'CallValidatorFunction', 'ComputeComplexityStage', 'DescendantProgramIds', 'EnsureMetricsStage', 'InsightsStage', 'LineageStage', 'MergeMetricsStage', 'ValidateCodeStage'] Finished=['AncestorProgramIds', 'CallProgramFunction', 'CallValidatorFunction', 'ComputeComplexityStage', 'DescendantProgramIds', 'EnsureMetricsStage', 'InsightsStage', 'MergeMetricsStage', 'ValidateCodeStage']
+2026-02-06 23:48:34.747 | DEBUG    | gigaevo.programs.stages.base:execute:193 | [LineageStage] ok in 16.82s
+2026-02-06 23:48:34.747 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][e94f17bb] Collected result for 'LineageStage': type=ProgramStageResult
+2026-02-06 23:48:34.751 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][e94f17bb] Stage 'LineageStage' FINALIZED as COMPLETED.
+2026-02-06 23:48:34.751 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][e94f17bb] Running=[] Launched=['AncestorProgramIds', 'CallProgramFunction', 'CallValidatorFunction', 'ComputeComplexityStage', 'DescendantProgramIds', 'EnsureMetricsStage', 'InsightsStage', 'LineageStage', 'MergeMetricsStage', 'ValidateCodeStage'] Finished=['AncestorProgramIds', 'CallProgramFunction', 'CallValidatorFunction', 'ComputeComplexityStage', 'DescendantProgramIds', 'EnsureMetricsStage', 'InsightsStage', 'LineageStage', 'MergeMetricsStage', 'ValidateCodeStage']
+2026-02-06 23:48:34.754 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][e94f17bb] Stage 'LineagesFromAncestors' STARTED.
+2026-02-06 23:48:34.755 | INFO     | gigaevo.programs.stages.base:execute:152 | [LineagesFromAncestors] Executing for e94f17bb
+2026-02-06 23:48:34.755 | INFO     | gigaevo.programs.stages.insights_lineage:compute:184 | [LineagesFromAncestors] Added transition analysis for 42f4e2c4-10c4-4eea-bedc-be73abeeedb0 -> e94f17bb-3962-43f3-9fe4-677d5018c575
+2026-02-06 23:48:34.755 | INFO     | gigaevo.programs.stages.insights_lineage:compute:184 | [LineagesFromAncestors] Added transition analysis for 6f19fb84-3f39-4e55-94ff-ebba6aabb13b -> e94f17bb-3962-43f3-9fe4-677d5018c575
+2026-02-06 23:48:34.755 | DEBUG    | gigaevo.programs.stages.base:execute:193 | [LineagesFromAncestors] ok in 0.00s
+2026-02-06 23:48:34.758 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][e94f17bb] Stage 'LineagesToDescendants' STARTED.
+2026-02-06 23:48:34.758 | DEBUG    | gigaevo.programs.dag.dag:_launch_ready:294 | [DAG][e94f17bb] Launched stages: ['LineagesFromAncestors', 'LineagesToDescendants']
+2026-02-06 23:48:34.758 | INFO     | gigaevo.programs.stages.base:execute:152 | [LineagesToDescendants] Executing for e94f17bb
+2026-02-06 23:48:34.758 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][e94f17bb] Collected result for 'LineagesFromAncestors': type=ProgramStageResult
+2026-02-06 23:48:34.758 | DEBUG    | gigaevo.programs.stages.base:execute:164 | [LineagesToDescendants] ok (pass-through) in 0.00s
+2026-02-06 23:48:34.762 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][e94f17bb] Stage 'LineagesFromAncestors' FINALIZED as COMPLETED.
+2026-02-06 23:48:34.763 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][e94f17bb] Running=['LineagesToDescendants'] Launched=['AncestorProgramIds', 'CallProgramFunction', 'CallValidatorFunction', 'ComputeComplexityStage', 'DescendantProgramIds', 'EnsureMetricsStage', 'InsightsStage', 'LineageStage', 'LineagesFromAncestors', 'LineagesToDescendants', 'MergeMetricsStage', 'ValidateCodeStage'] Finished=['AncestorProgramIds', 'CallProgramFunction', 'CallValidatorFunction', 'ComputeComplexityStage', 'DescendantProgramIds', 'EnsureMetricsStage', 'InsightsStage', 'LineageStage', 'LineagesFromAncestors', 'MergeMetricsStage', 'ValidateCodeStage']
+2026-02-06 23:48:34.763 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][e94f17bb] Collected result for 'LineagesToDescendants': type=ProgramStageResult
+2026-02-06 23:48:34.767 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][e94f17bb] Stage 'LineagesToDescendants' FINALIZED as SKIPPED.
+2026-02-06 23:48:34.767 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][e94f17bb] Running=[] Launched=['AncestorProgramIds', 'CallProgramFunction', 'CallValidatorFunction', 'ComputeComplexityStage', 'DescendantProgramIds', 'EnsureMetricsStage', 'InsightsStage', 'LineageStage', 'LineagesFromAncestors', 'LineagesToDescendants', 'MergeMetricsStage', 'ValidateCodeStage'] Finished=['AncestorProgramIds', 'CallProgramFunction', 'CallValidatorFunction', 'ComputeComplexityStage', 'DescendantProgramIds', 'EnsureMetricsStage', 'InsightsStage', 'LineageStage', 'LineagesFromAncestors', 'LineagesToDescendants', 'MergeMetricsStage', 'ValidateCodeStage']
+2026-02-06 23:48:34.770 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][e94f17bb] Stage 'MutationContextStage' STARTED.
+2026-02-06 23:48:34.770 | DEBUG    | gigaevo.programs.dag.dag:_launch_ready:294 | [DAG][e94f17bb] Launched stages: ['MutationContextStage']
+2026-02-06 23:48:34.770 | INFO     | gigaevo.programs.stages.base:execute:152 | [MutationContextStage] Executing for e94f17bb
+2026-02-06 23:48:34.771 | DEBUG    | gigaevo.evolution.mutation.context:format:74 | [FamilyTreeMutationContext] Formatting with 2 ancestors and 0 descendants
+2026-02-06 23:48:34.771 | DEBUG    | gigaevo.programs.stages.base:execute:193 | [MutationContextStage] ok in 0.00s
+2026-02-06 23:48:34.771 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][e94f17bb] Collected result for 'MutationContextStage': type=ProgramStageResult
+2026-02-06 23:48:34.775 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][e94f17bb] Stage 'MutationContextStage' FINALIZED as COMPLETED.
+2026-02-06 23:48:34.775 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][e94f17bb] Running=[] Launched=['AncestorProgramIds', 'CallProgramFunction', 'CallValidatorFunction', 'ComputeComplexityStage', 'DescendantProgramIds', 'EnsureMetricsStage', 'InsightsStage', 'LineageStage', 'LineagesFromAncestors', 'LineagesToDescendants', 'MergeMetricsStage', 'MutationContextStage', 'ValidateCodeStage'] Finished=['AncestorProgramIds', 'CallProgramFunction', 'CallValidatorFunction', 'ComputeComplexityStage', 'DescendantProgramIds', 'EnsureMetricsStage', 'InsightsStage', 'LineageStage', 'LineagesFromAncestors', 'LineagesToDescendants', 'MergeMetricsStage', 'MutationContextStage', 'ValidateCodeStage']
+2026-02-06 23:48:34.775 | INFO     | gigaevo.programs.dag.dag:_run_internal:213 | [DAG][e94f17bb] Idle & no pending work — terminating.
+2026-02-06 23:48:34.775 | DEBUG    | gigaevo.database.state_manager:set_program_state:66 | [ProgramStateManager] Setting program e94f17bb state from ProgramState.DAG_PROCESSING_STARTED to ProgramState.DAG_PROCESSING_COMPLETED
+2026-02-06 23:48:34.775 | DEBUG    | gigaevo.database.state_manager:set_program_state:87 | [ProgramStateManager] Updated program e94f17bb state to ProgramState.DAG_PROCESSING_COMPLETED
+2026-02-06 23:48:34.779 | DEBUG    | gigaevo.database.state_manager:set_program_state:94 | [ProgramStateManager] Atomically transitioned e94f17bb state ProgramState.DAG_PROCESSING_STARTED -> ProgramState.DAG_PROCESSING_COMPLETED
+2026-02-06 23:48:34.779 | DEBUG    | gigaevo.runner.dag_runner:_execute_dag:397 | [DagScheduler] DAG completed for e94f17bb-3962-43f3-9fe4-677d5018c575 (state updated)
+2026-02-06 23:48:34.779 | DEBUG    | gigaevo.runner.dag_runner:_maintain:268 | [DagScheduler] harvested completed task for program e94f17bb-3962-43f3-9fe4-677d5018c575
+2026-02-06 23:48:34.901 | DEBUG    | gigaevo.runner.dag_runner:_maintain:280 | [DagScheduler] Cleaned up 1 finished + 0 timed out tasks, forced GC
+2026-02-06 23:48:35.176 | DEBUG    | gigaevo.evolution.engine.core:step:183 | [EvolutionEngine] Phase 3: Mutant DAGs finished (idle)
+2026-02-06 23:48:35.185 | INFO     | gigaevo.evolution.engine.core:_ingest_completed_programs:239 | [EvolutionEngine] Ingest 9 program(s)
+2026-02-06 23:48:35.186 | DEBUG    | gigaevo.evolution.engine.core:_ingest_completed_programs:240 | [EvolutionEngine] Program IDs: ['8cc93180-b0ac-4626-84bb-ee00ab5796a5', '42f4e2c4-10c4-4eea-bedc-be73abeeedb0', 'e94f17bb-3962-43f3-9fe4-677d5018c575', 'e889993e-d080-4683-8eb4-d91fdb27b6bb', 'a319049e-49f6-4a9c-8741-c50b1cd8e08d', '6f19fb84-3f39-4e55-94ff-ebba6aabb13b', '378a56f5-e0d5-47be-9aee-0109f14527a9', 'c681e456-6b8f-429e-abcd-1a7a444477ec']
+2026-02-06 23:48:35.186 | DEBUG    | gigaevo.evolution.engine.acceptor:is_accepted:65 | [DefaultAcceptor] Program e94f17bb-3962-43f3-9fe4-677d5018c575 accepted by EvolutionEngine: state=ProgramState.DAG_PROCESSING_COMPLETED
+2026-02-06 23:48:35.186 | DEBUG    | gigaevo.evolution.engine.acceptor:is_accepted:110 | [RequiredKeysAcceptor] Program e94f17bb-3962-43f3-9fe4-677d5018c575 accepted by EvolutionEngine: has all required keys ['fitness', 'is_valid'] (total metrics: 3)
+2026-02-06 23:48:35.187 | DEBUG    | gigaevo.evolution.strategies.multi_island:add:67 | MultiIsland: adding program e94f17bb-3962-43f3-9fe4-677d5018c575 (island_id=auto-route)
+2026-02-06 23:48:35.187 | DEBUG    | gigaevo.evolution.strategies.models:get_cell:133 | BehaviorSpace: mapped to cell (0, 0) | fitness=0.000->0 (bounds=[0.0,1.0], linear) | is_valid=0.000->0 (bounds=[0.0,1.0], linear)
+2026-02-06 23:48:35.187 | DEBUG    | gigaevo.database.state_manager:set_program_state:66 | [ProgramStateManager] Setting program 8cc93180 state from ProgramState.DAG_PROCESSING_COMPLETED to ProgramState.EVOLVING
+2026-02-06 23:48:35.187 | DEBUG    | gigaevo.database.state_manager:set_program_state:87 | [ProgramStateManager] Updated program 8cc93180 state to ProgramState.EVOLVING
+2026-02-06 23:48:35.187 | DEBUG    | gigaevo.database.state_manager:set_program_state:66 | [ProgramStateManager] Setting program 42f4e2c4 state from ProgramState.DAG_PROCESSING_COMPLETED to ProgramState.EVOLVING
+2026-02-06 23:48:35.187 | DEBUG    | gigaevo.database.state_manager:set_program_state:87 | [ProgramStateManager] Updated program 42f4e2c4 state to ProgramState.EVOLVING
+2026-02-06 23:48:35.187 | DEBUG    | gigaevo.evolution.strategies.mutant_router:route_mutant:57 | 🏝️ Routed mutant e94f17bb-3962-43f3-9fe4-677d5018c575 to fitness_island (random selection)
+2026-02-06 23:48:35.188 | DEBUG    | gigaevo.evolution.strategies.multi_island:add:96 | MultiIsland: routing program e94f17bb-3962-43f3-9fe4-677d5018c575 to island 'fitness_island'
+2026-02-06 23:48:35.188 | DEBUG    | gigaevo.evolution.strategies.models:get_cell:133 | BehaviorSpace: mapped to cell (0, 0) | fitness=0.000->0 (bounds=[0.0,1.0], linear) | is_valid=0.000->0 (bounds=[0.0,1.0], linear)
+2026-02-06 23:48:35.188 | DEBUG    | gigaevo.evolution.strategies.island:add:96 | Island fitness_island: program e94f17bb-3962-43f3-9fe4-677d5018c575 -> cell (0, 0) (behavior: {'fitness': 0.0, 'is_valid': 0.0})
+2026-02-06 23:48:35.199 | DEBUG    | gigaevo.database.state_manager:set_program_state:94 | [ProgramStateManager] Atomically transitioned 8cc93180 state ProgramState.DAG_PROCESSING_COMPLETED -> ProgramState.EVOLVING
+2026-02-06 23:48:35.199 | DEBUG    | gigaevo.evolution.storage.archive_storage:add_elite:142 | [Archive] cell 0,0 -> e94f17bb-3962-43f3-9fe4-677d5018c575
+2026-02-06 23:48:35.199 | DEBUG    | gigaevo.evolution.strategies.island:add:136 | Island fitness_island: program e94f17bb-3962-43f3-9fe4-677d5018c575 filled empty cell (0, 0)
+2026-02-06 23:48:35.208 | DEBUG    | gigaevo.database.state_manager:set_program_state:94 | [ProgramStateManager] Atomically transitioned 42f4e2c4 state ProgramState.DAG_PROCESSING_COMPLETED -> ProgramState.EVOLVING
+2026-02-06 23:48:35.211 | DEBUG    | gigaevo.evolution.strategies.island:_enforce_size_limit:215 | Island fitness_island: size check OK (6/75)
+2026-02-06 23:48:35.211 | DEBUG    | gigaevo.evolution.strategies.multi_island:add:104 | MultiIsland: program e94f17bb-3962-43f3-9fe4-677d5018c575 successfully added to island 'fitness_island'
+2026-02-06 23:48:35.211 | DEBUG    | gigaevo.evolution.engine.core:_ingest_completed_programs:273 | [EvolutionEngine] Program e94f17bb-3962-43f3-9fe4-677d5018c575 added to strategy
+2026-02-06 23:48:35.211 | DEBUG    | gigaevo.evolution.engine.acceptor:is_accepted:65 | [DefaultAcceptor] Program a319049e-49f6-4a9c-8741-c50b1cd8e08d accepted by EvolutionEngine: state=ProgramState.DAG_PROCESSING_COMPLETED
+2026-02-06 23:48:35.211 | DEBUG    | gigaevo.evolution.engine.acceptor:is_accepted:110 | [RequiredKeysAcceptor] Program a319049e-49f6-4a9c-8741-c50b1cd8e08d accepted by EvolutionEngine: has all required keys ['fitness', 'is_valid'] (total metrics: 3)
+2026-02-06 23:48:35.211 | DEBUG    | gigaevo.evolution.strategies.multi_island:add:67 | MultiIsland: adding program a319049e-49f6-4a9c-8741-c50b1cd8e08d (island_id=auto-route)
+2026-02-06 23:48:35.211 | DEBUG    | gigaevo.evolution.strategies.models:get_cell:133 | BehaviorSpace: mapped to cell (0, 0) | fitness=0.000->0 (bounds=[0.0,1.0], linear) | is_valid=0.000->0 (bounds=[0.0,1.0], linear)
+2026-02-06 23:48:35.211 | DEBUG    | gigaevo.database.state_manager:set_program_state:66 | [ProgramStateManager] Setting program e94f17bb state from ProgramState.DAG_PROCESSING_COMPLETED to ProgramState.EVOLVING
+2026-02-06 23:48:35.211 | DEBUG    | gigaevo.database.state_manager:set_program_state:87 | [ProgramStateManager] Updated program e94f17bb state to ProgramState.EVOLVING
+2026-02-06 23:48:35.212 | DEBUG    | gigaevo.database.state_manager:set_program_state:66 | [ProgramStateManager] Setting program e889993e state from ProgramState.DAG_PROCESSING_COMPLETED to ProgramState.EVOLVING
+2026-02-06 23:48:35.212 | DEBUG    | gigaevo.database.state_manager:set_program_state:87 | [ProgramStateManager] Updated program e889993e state to ProgramState.EVOLVING
+2026-02-06 23:48:35.213 | DEBUG    | gigaevo.evolution.strategies.selectors:__call__:52 | SumArchiveSelector: a319049e-49f6-4a9c-8741-c50b1cd8e08d vs e94f17bb-3962-43f3-9fe4-677d5018c575 -> REJECT (new=0.000, current=0.000, keys=['fitness'])
+2026-02-06 23:48:35.213 | DEBUG    | gigaevo.evolution.strategies.mutant_router:route_mutant:52 | 🚫 No compatible islands found for mutant a319049e-49f6-4a9c-8741-c50b1cd8e08d
+2026-02-06 23:48:35.213 | DEBUG    | gigaevo.evolution.strategies.multi_island:add:90 | MultiIsland: program a319049e-49f6-4a9c-8741-c50b1cd8e08d rejected (router returned None)
+2026-02-06 23:48:35.213 | DEBUG    | gigaevo.evolution.engine.core:_ingest_completed_programs:283 | [EvolutionEngine] Program a319049e-49f6-4a9c-8741-c50b1cd8e08d rejected by strategy
+2026-02-06 23:48:35.214 | DEBUG    | gigaevo.evolution.engine.acceptor:is_accepted:65 | [DefaultAcceptor] Program 378a56f5-e0d5-47be-9aee-0109f14527a9 accepted by EvolutionEngine: state=ProgramState.DAG_PROCESSING_COMPLETED
+2026-02-06 23:48:35.214 | DEBUG    | gigaevo.evolution.engine.acceptor:is_accepted:110 | [RequiredKeysAcceptor] Program 378a56f5-e0d5-47be-9aee-0109f14527a9 accepted by EvolutionEngine: has all required keys ['fitness', 'is_valid'] (total metrics: 3)
+2026-02-06 23:48:35.214 | DEBUG    | gigaevo.evolution.strategies.multi_island:add:67 | MultiIsland: adding program 378a56f5-e0d5-47be-9aee-0109f14527a9 (island_id=auto-route)
+2026-02-06 23:48:35.214 | DEBUG    | gigaevo.evolution.strategies.models:get_cell:133 | BehaviorSpace: mapped to cell (0, 1) | fitness=0.000->0 (bounds=[0.0,1.0], linear) | is_valid=1.000->1 (bounds=[0.0,1.0], linear)
+2026-02-06 23:48:35.215 | DEBUG    | gigaevo.database.state_manager:set_program_state:66 | [ProgramStateManager] Setting program a319049e state from ProgramState.DAG_PROCESSING_COMPLETED to ProgramState.DISCARDED
+2026-02-06 23:48:35.215 | DEBUG    | gigaevo.database.state_manager:set_program_state:87 | [ProgramStateManager] Updated program a319049e state to ProgramState.DISCARDED
+2026-02-06 23:48:35.215 | DEBUG    | gigaevo.database.state_manager:set_program_state:66 | [ProgramStateManager] Setting program 6f19fb84 state from ProgramState.DAG_PROCESSING_COMPLETED to ProgramState.EVOLVING
+2026-02-06 23:48:35.215 | DEBUG    | gigaevo.database.state_manager:set_program_state:87 | [ProgramStateManager] Updated program 6f19fb84 state to ProgramState.EVOLVING
+2026-02-06 23:48:35.219 | DEBUG    | gigaevo.database.state_manager:set_program_state:94 | [ProgramStateManager] Atomically transitioned e94f17bb state ProgramState.DAG_PROCESSING_COMPLETED -> ProgramState.EVOLVING
+2026-02-06 23:48:35.224 | DEBUG    | gigaevo.evolution.strategies.selectors:__call__:52 | SumArchiveSelector: 378a56f5-e0d5-47be-9aee-0109f14527a9 vs 42f4e2c4-10c4-4eea-bedc-be73abeeedb0 -> REJECT (new=0.000, current=0.000, keys=['fitness'])
+2026-02-06 23:48:35.224 | DEBUG    | gigaevo.evolution.strategies.mutant_router:route_mutant:52 | 🚫 No compatible islands found for mutant 378a56f5-e0d5-47be-9aee-0109f14527a9
+2026-02-06 23:48:35.224 | DEBUG    | gigaevo.evolution.strategies.multi_island:add:90 | MultiIsland: program 378a56f5-e0d5-47be-9aee-0109f14527a9 rejected (router returned None)
+2026-02-06 23:48:35.224 | DEBUG    | gigaevo.evolution.engine.core:_ingest_completed_programs:283 | [EvolutionEngine] Program 378a56f5-e0d5-47be-9aee-0109f14527a9 rejected by strategy
+2026-02-06 23:48:35.224 | DEBUG    | gigaevo.evolution.engine.acceptor:is_accepted:65 | [DefaultAcceptor] Program a117f9cb-ec46-4424-be28-7535061ed8d9 accepted by EvolutionEngine: state=ProgramState.DAG_PROCESSING_COMPLETED
+2026-02-06 23:48:35.224 | DEBUG    | gigaevo.evolution.engine.acceptor:is_accepted:110 | [RequiredKeysAcceptor] Program a117f9cb-ec46-4424-be28-7535061ed8d9 accepted by EvolutionEngine: has all required keys ['fitness', 'is_valid'] (total metrics: 3)
+2026-02-06 23:48:35.224 | DEBUG    | gigaevo.evolution.strategies.multi_island:add:67 | MultiIsland: adding program a117f9cb-ec46-4424-be28-7535061ed8d9 (island_id=auto-route)
+2026-02-06 23:48:35.224 | DEBUG    | gigaevo.evolution.strategies.models:get_cell:133 | BehaviorSpace: mapped to cell (0, 0) | fitness=0.000->0 (bounds=[0.0,1.0], linear) | is_valid=0.000->0 (bounds=[0.0,1.0], linear)
+2026-02-06 23:48:35.225 | DEBUG    | gigaevo.database.state_manager:set_program_state:66 | [ProgramStateManager] Setting program 378a56f5 state from ProgramState.DAG_PROCESSING_COMPLETED to ProgramState.DISCARDED
+2026-02-06 23:48:35.225 | DEBUG    | gigaevo.database.state_manager:set_program_state:87 | [ProgramStateManager] Updated program 378a56f5 state to ProgramState.DISCARDED
+2026-02-06 23:48:35.225 | DEBUG    | gigaevo.database.state_manager:set_program_state:66 | [ProgramStateManager] Setting program c681e456 state from ProgramState.DAG_PROCESSING_COMPLETED to ProgramState.EVOLVING
+2026-02-06 23:48:35.225 | DEBUG    | gigaevo.database.state_manager:set_program_state:87 | [ProgramStateManager] Updated program c681e456 state to ProgramState.EVOLVING
+2026-02-06 23:48:35.228 | DEBUG    | gigaevo.database.state_manager:set_program_state:94 | [ProgramStateManager] Atomically transitioned e889993e state ProgramState.DAG_PROCESSING_COMPLETED -> ProgramState.EVOLVING
+2026-02-06 23:48:35.229 | DEBUG    | gigaevo.database.state_manager:set_program_state:94 | [ProgramStateManager] Atomically transitioned a319049e state ProgramState.DAG_PROCESSING_COMPLETED -> ProgramState.DISCARDED
+2026-02-06 23:48:35.234 | DEBUG    | gigaevo.evolution.strategies.selectors:__call__:52 | SumArchiveSelector: a117f9cb-ec46-4424-be28-7535061ed8d9 vs e94f17bb-3962-43f3-9fe4-677d5018c575 -> REJECT (new=0.000, current=0.000, keys=['fitness'])
+2026-02-06 23:48:35.234 | DEBUG    | gigaevo.evolution.strategies.mutant_router:route_mutant:52 | 🚫 No compatible islands found for mutant a117f9cb-ec46-4424-be28-7535061ed8d9
+2026-02-06 23:48:35.234 | DEBUG    | gigaevo.evolution.strategies.multi_island:add:90 | MultiIsland: program a117f9cb-ec46-4424-be28-7535061ed8d9 rejected (router returned None)
+2026-02-06 23:48:35.234 | DEBUG    | gigaevo.evolution.engine.core:_ingest_completed_programs:283 | [EvolutionEngine] Program a117f9cb-ec46-4424-be28-7535061ed8d9 rejected by strategy
+2026-02-06 23:48:35.235 | DEBUG    | gigaevo.database.state_manager:set_program_state:66 | [ProgramStateManager] Setting program a117f9cb state from ProgramState.DAG_PROCESSING_COMPLETED to ProgramState.DISCARDED
+2026-02-06 23:48:35.235 | DEBUG    | gigaevo.database.state_manager:set_program_state:87 | [ProgramStateManager] Updated program a117f9cb state to ProgramState.DISCARDED
+2026-02-06 23:48:35.235 | DEBUG    | gigaevo.database.state_manager:set_program_state:94 | [ProgramStateManager] Atomically transitioned 6f19fb84 state ProgramState.DAG_PROCESSING_COMPLETED -> ProgramState.EVOLVING
+2026-02-06 23:48:35.248 | DEBUG    | gigaevo.database.state_manager:set_program_state:94 | [ProgramStateManager] Atomically transitioned c681e456 state ProgramState.DAG_PROCESSING_COMPLETED -> ProgramState.EVOLVING
+2026-02-06 23:48:35.249 | DEBUG    | gigaevo.database.state_manager:set_program_state:94 | [ProgramStateManager] Atomically transitioned 378a56f5 state ProgramState.DAG_PROCESSING_COMPLETED -> ProgramState.DISCARDED
+2026-02-06 23:48:35.251 | DEBUG    | gigaevo.database.state_manager:set_program_state:94 | [ProgramStateManager] Atomically transitioned a117f9cb state ProgramState.DAG_PROCESSING_COMPLETED -> ProgramState.DISCARDED
+2026-02-06 23:48:35.251 | INFO     | gigaevo.evolution.engine.core:_ingest_completed_programs:296 | [EvolutionEngine] Ingest done | added=1, restored=5, rejected_validation=0, rejected_strategy=3
+2026-02-06 23:48:35.252 | DEBUG    | gigaevo.evolution.engine.core:step:187 | [EvolutionEngine] Phase 4: Ingestion done
+2026-02-06 23:48:35.257 | DEBUG    | gigaevo.database.state_manager:set_program_state:66 | [ProgramStateManager] Setting program 42f4e2c4 state from ProgramState.EVOLVING to ProgramState.FRESH
+2026-02-06 23:48:35.257 | DEBUG    | gigaevo.database.state_manager:set_program_state:87 | [ProgramStateManager] Updated program 42f4e2c4 state to ProgramState.FRESH
+2026-02-06 23:48:35.257 | DEBUG    | gigaevo.database.state_manager:set_program_state:66 | [ProgramStateManager] Setting program e94f17bb state from ProgramState.EVOLVING to ProgramState.FRESH
+2026-02-06 23:48:35.257 | DEBUG    | gigaevo.database.state_manager:set_program_state:87 | [ProgramStateManager] Updated program e94f17bb state to ProgramState.FRESH
+2026-02-06 23:48:35.257 | DEBUG    | gigaevo.database.state_manager:set_program_state:66 | [ProgramStateManager] Setting program e889993e state from ProgramState.EVOLVING to ProgramState.FRESH
+2026-02-06 23:48:35.258 | DEBUG    | gigaevo.database.state_manager:set_program_state:87 | [ProgramStateManager] Updated program e889993e state to ProgramState.FRESH
+2026-02-06 23:48:35.258 | DEBUG    | gigaevo.database.state_manager:set_program_state:66 | [ProgramStateManager] Setting program 6f19fb84 state from ProgramState.EVOLVING to ProgramState.FRESH
+2026-02-06 23:48:35.258 | DEBUG    | gigaevo.database.state_manager:set_program_state:87 | [ProgramStateManager] Updated program 6f19fb84 state to ProgramState.FRESH
+2026-02-06 23:48:35.258 | DEBUG    | gigaevo.database.state_manager:set_program_state:66 | [ProgramStateManager] Setting program c681e456 state from ProgramState.EVOLVING to ProgramState.FRESH
+2026-02-06 23:48:35.258 | DEBUG    | gigaevo.database.state_manager:set_program_state:87 | [ProgramStateManager] Updated program c681e456 state to ProgramState.FRESH
+2026-02-06 23:48:35.258 | DEBUG    | gigaevo.database.state_manager:set_program_state:66 | [ProgramStateManager] Setting program 8cc93180 state from ProgramState.EVOLVING to ProgramState.FRESH
+2026-02-06 23:48:35.258 | DEBUG    | gigaevo.database.state_manager:set_program_state:87 | [ProgramStateManager] Updated program 8cc93180 state to ProgramState.FRESH
+2026-02-06 23:48:35.275 | DEBUG    | gigaevo.database.state_manager:set_program_state:94 | [ProgramStateManager] Atomically transitioned e94f17bb state ProgramState.EVOLVING -> ProgramState.FRESH
+2026-02-06 23:48:35.275 | DEBUG    | gigaevo.database.state_manager:set_program_state:94 | [ProgramStateManager] Atomically transitioned c681e456 state ProgramState.EVOLVING -> ProgramState.FRESH
+2026-02-06 23:48:35.276 | DEBUG    | gigaevo.database.state_manager:set_program_state:94 | [ProgramStateManager] Atomically transitioned e889993e state ProgramState.EVOLVING -> ProgramState.FRESH
+2026-02-06 23:48:35.276 | DEBUG    | gigaevo.database.state_manager:set_program_state:94 | [ProgramStateManager] Atomically transitioned 6f19fb84 state ProgramState.EVOLVING -> ProgramState.FRESH
+2026-02-06 23:48:35.290 | DEBUG    | gigaevo.database.state_manager:set_program_state:94 | [ProgramStateManager] Atomically transitioned 8cc93180 state ProgramState.EVOLVING -> ProgramState.FRESH
+2026-02-06 23:48:35.291 | DEBUG    | gigaevo.database.state_manager:set_program_state:94 | [ProgramStateManager] Atomically transitioned 42f4e2c4 state ProgramState.EVOLVING -> ProgramState.FRESH
+2026-02-06 23:48:35.291 | INFO     | gigaevo.evolution.engine.core:_refresh_evolving_programs:324 | [EvolutionEngine] Submitted 6 program(s) for refresh
+2026-02-06 23:48:35.291 | DEBUG    | gigaevo.evolution.engine.core:step:191 | [EvolutionEngine] Phase 5: Refreshed 6 program(s)
+2026-02-06 23:48:35.295 | DEBUG    | gigaevo.llm.models:__init__:86 | [MultiModelRouter] Langfuse tracing is disabled. Set LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY environment variables to enable tracing.
+2026-02-06 23:48:35.295 | INFO     | gigaevo.llm.models:__init__:91 | [MultiModelRouter] Initialized with 1 models
+2026-02-06 23:48:35.297 | INFO     | gigaevo.llm.agents.base:__init__:62 | [InsightsAgent] Initialized
+2026-02-06 23:48:35.297 | INFO     | gigaevo.programs.stages.langgraph_stage:__init__:52 | [InsightsStage] Initialized with agent=InsightsAgent program_kwarg=program
+2026-02-06 23:48:35.298 | DEBUG    | gigaevo.llm.models:__init__:86 | [MultiModelRouter] Langfuse tracing is disabled. Set LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY environment variables to enable tracing.
+2026-02-06 23:48:35.298 | INFO     | gigaevo.llm.models:__init__:91 | [MultiModelRouter] Initialized with 1 models
+2026-02-06 23:48:35.301 | INFO     | gigaevo.llm.agents.base:__init__:62 | [LineageAgent] Initialized
+2026-02-06 23:48:35.301 | INFO     | gigaevo.programs.stages.langgraph_stage:__init__:52 | [LineageStage] Initialized with agent=LineageAgent program_kwarg=program
+2026-02-06 23:48:35.302 | DEBUG    | gigaevo.database.state_manager:set_program_state:66 | [ProgramStateManager] Setting program e94f17bb state from ProgramState.FRESH to ProgramState.DAG_PROCESSING_STARTED
+2026-02-06 23:48:35.302 | DEBUG    | gigaevo.database.state_manager:set_program_state:87 | [ProgramStateManager] Updated program e94f17bb state to ProgramState.DAG_PROCESSING_STARTED
+2026-02-06 23:48:35.302 | DEBUG    | gigaevo.programs.dag.dag:run:65 | [DAG][e94f17bb] Run started
+2026-02-06 23:48:35.310 | DEBUG    | gigaevo.evolution.engine.core:_has_active_dags:340 | [EvolutionEngine] Pending DAGs: fresh=6, processing=0
+2026-02-06 23:48:35.310 | DEBUG    | gigaevo.database.state_manager:set_program_state:94 | [ProgramStateManager] Atomically transitioned e94f17bb state ProgramState.FRESH -> ProgramState.DAG_PROCESSING_STARTED
+2026-02-06 23:48:35.310 | INFO     | gigaevo.runner.dag_runner:_launch:357 | [DagScheduler] launched e94f17bb-3962-43f3-9fe4-677d5018c575
+2026-02-06 23:48:35.311 | DEBUG    | gigaevo.llm.models:__init__:86 | [MultiModelRouter] Langfuse tracing is disabled. Set LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY environment variables to enable tracing.
+2026-02-06 23:48:35.311 | INFO     | gigaevo.llm.models:__init__:91 | [MultiModelRouter] Initialized with 1 models
+2026-02-06 23:48:35.313 | INFO     | gigaevo.llm.agents.base:__init__:62 | [InsightsAgent] Initialized
+2026-02-06 23:48:35.313 | INFO     | gigaevo.programs.stages.langgraph_stage:__init__:52 | [InsightsStage] Initialized with agent=InsightsAgent program_kwarg=program
+2026-02-06 23:48:35.314 | DEBUG    | gigaevo.llm.models:__init__:86 | [MultiModelRouter] Langfuse tracing is disabled. Set LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY environment variables to enable tracing.
+2026-02-06 23:48:35.314 | INFO     | gigaevo.llm.models:__init__:91 | [MultiModelRouter] Initialized with 1 models
+2026-02-06 23:48:35.317 | INFO     | gigaevo.llm.agents.base:__init__:62 | [LineageAgent] Initialized
+2026-02-06 23:48:35.317 | INFO     | gigaevo.programs.stages.langgraph_stage:__init__:52 | [LineageStage] Initialized with agent=LineageAgent program_kwarg=program
+2026-02-06 23:48:35.318 | DEBUG    | gigaevo.database.state_manager:set_program_state:66 | [ProgramStateManager] Setting program 6f19fb84 state from ProgramState.FRESH to ProgramState.DAG_PROCESSING_STARTED
+2026-02-06 23:48:35.318 | DEBUG    | gigaevo.database.state_manager:set_program_state:87 | [ProgramStateManager] Updated program 6f19fb84 state to ProgramState.DAG_PROCESSING_STARTED
+2026-02-06 23:48:35.318 | DEBUG    | gigaevo.programs.dag.dag:run:65 | [DAG][6f19fb84] Run started
+2026-02-06 23:48:35.326 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][e94f17bb] Running=[] Launched=[] Finished=[]
+2026-02-06 23:48:35.327 | DEBUG    | gigaevo.database.state_manager:set_program_state:94 | [ProgramStateManager] Atomically transitioned 6f19fb84 state ProgramState.FRESH -> ProgramState.DAG_PROCESSING_STARTED
+2026-02-06 23:48:35.327 | INFO     | gigaevo.runner.dag_runner:_launch:357 | [DagScheduler] launched 6f19fb84-3f39-4e55-94ff-ebba6aabb13b
+2026-02-06 23:48:35.328 | DEBUG    | gigaevo.llm.models:__init__:86 | [MultiModelRouter] Langfuse tracing is disabled. Set LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY environment variables to enable tracing.
+2026-02-06 23:48:35.328 | INFO     | gigaevo.llm.models:__init__:91 | [MultiModelRouter] Initialized with 1 models
+2026-02-06 23:48:35.330 | INFO     | gigaevo.llm.agents.base:__init__:62 | [InsightsAgent] Initialized
+2026-02-06 23:48:35.330 | INFO     | gigaevo.programs.stages.langgraph_stage:__init__:52 | [InsightsStage] Initialized with agent=InsightsAgent program_kwarg=program
+2026-02-06 23:48:35.330 | DEBUG    | gigaevo.llm.models:__init__:86 | [MultiModelRouter] Langfuse tracing is disabled. Set LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY environment variables to enable tracing.
+2026-02-06 23:48:35.330 | INFO     | gigaevo.llm.models:__init__:91 | [MultiModelRouter] Initialized with 1 models
+2026-02-06 23:48:35.333 | INFO     | gigaevo.llm.agents.base:__init__:62 | [LineageAgent] Initialized
+2026-02-06 23:48:35.333 | INFO     | gigaevo.programs.stages.langgraph_stage:__init__:52 | [LineageStage] Initialized with agent=LineageAgent program_kwarg=program
+2026-02-06 23:48:35.334 | DEBUG    | gigaevo.database.state_manager:set_program_state:66 | [ProgramStateManager] Setting program e889993e state from ProgramState.FRESH to ProgramState.DAG_PROCESSING_STARTED
+2026-02-06 23:48:35.334 | DEBUG    | gigaevo.database.state_manager:set_program_state:87 | [ProgramStateManager] Updated program e889993e state to ProgramState.DAG_PROCESSING_STARTED
+2026-02-06 23:48:35.334 | DEBUG    | gigaevo.programs.dag.dag:run:65 | [DAG][e889993e] Run started
+2026-02-06 23:48:35.342 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][e94f17bb] Stage 'AncestorProgramIds' STARTED.
+2026-02-06 23:48:35.343 | INFO     | gigaevo.programs.stages.base:execute:152 | [AncestorProgramIds] Executing for e94f17bb
+2026-02-06 23:48:35.345 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][6f19fb84] Running=[] Launched=[] Finished=[]
+2026-02-06 23:48:35.346 | DEBUG    | gigaevo.database.state_manager:set_program_state:94 | [ProgramStateManager] Atomically transitioned e889993e state ProgramState.FRESH -> ProgramState.DAG_PROCESSING_STARTED
+2026-02-06 23:48:35.346 | INFO     | gigaevo.runner.dag_runner:_launch:357 | [DagScheduler] launched e889993e-d080-4683-8eb4-d91fdb27b6bb
+2026-02-06 23:48:35.347 | DEBUG    | gigaevo.llm.models:__init__:86 | [MultiModelRouter] Langfuse tracing is disabled. Set LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY environment variables to enable tracing.
+2026-02-06 23:48:35.347 | INFO     | gigaevo.llm.models:__init__:91 | [MultiModelRouter] Initialized with 1 models
+2026-02-06 23:48:35.349 | INFO     | gigaevo.llm.agents.base:__init__:62 | [InsightsAgent] Initialized
+2026-02-06 23:48:35.349 | INFO     | gigaevo.programs.stages.langgraph_stage:__init__:52 | [InsightsStage] Initialized with agent=InsightsAgent program_kwarg=program
+2026-02-06 23:48:35.350 | DEBUG    | gigaevo.llm.models:__init__:86 | [MultiModelRouter] Langfuse tracing is disabled. Set LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY environment variables to enable tracing.
+2026-02-06 23:48:35.350 | INFO     | gigaevo.llm.models:__init__:91 | [MultiModelRouter] Initialized with 1 models
+2026-02-06 23:48:35.353 | INFO     | gigaevo.llm.agents.base:__init__:62 | [LineageAgent] Initialized
+2026-02-06 23:48:35.353 | INFO     | gigaevo.programs.stages.langgraph_stage:__init__:52 | [LineageStage] Initialized with agent=LineageAgent program_kwarg=program
+2026-02-06 23:48:35.353 | DEBUG    | gigaevo.database.state_manager:set_program_state:66 | [ProgramStateManager] Setting program c681e456 state from ProgramState.FRESH to ProgramState.DAG_PROCESSING_STARTED
+2026-02-06 23:48:35.353 | DEBUG    | gigaevo.database.state_manager:set_program_state:87 | [ProgramStateManager] Updated program c681e456 state to ProgramState.DAG_PROCESSING_STARTED
+2026-02-06 23:48:35.354 | DEBUG    | gigaevo.programs.dag.dag:run:65 | [DAG][c681e456] Run started
+2026-02-06 23:48:35.356 | INFO     | gigaevo.programs.stages.collector:_collect_programs:92 | [AncestorProgramIds] Selected 2 programs for e94f17bb-3962-43f3-9fe4-677d5018c575 with parents ['42f4e2c4-10c4-4eea-bedc-be73abeeedb0', '6f19fb84-3f39-4e55-94ff-ebba6aabb13b']
+2026-02-06 23:48:35.359 | DEBUG    | gigaevo.programs.stages.base:execute:193 | [AncestorProgramIds] ok in 0.02s
+2026-02-06 23:48:35.360 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][e94f17bb] Stage 'DescendantProgramIds' STARTED.
+2026-02-06 23:48:35.360 | DEBUG    | gigaevo.programs.dag.dag:_launch_ready:294 | [DAG][e94f17bb] Launched stages: ['AncestorProgramIds', 'DescendantProgramIds']
+2026-02-06 23:48:35.361 | INFO     | gigaevo.programs.stages.base:execute:152 | [DescendantProgramIds] Executing for e94f17bb
+2026-02-06 23:48:35.365 | INFO     | gigaevo.programs.stages.collector:_collect_programs:74 | [DescendantProgramIds] Selected 0 programs for e94f17bb-3962-43f3-9fe4-677d5018c575 with children []
+2026-02-06 23:48:35.365 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][e94f17bb] Collected result for 'AncestorProgramIds': type=ProgramStageResult
+2026-02-06 23:48:35.370 | DEBUG    | gigaevo.programs.stages.base:execute:193 | [DescendantProgramIds] ok in 0.01s
+2026-02-06 23:48:35.371 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][6f19fb84] Stage 'AncestorProgramIds' STARTED.
+2026-02-06 23:48:35.371 | DEBUG    | gigaevo.database.state_manager:set_program_state:94 | [ProgramStateManager] Atomically transitioned c681e456 state ProgramState.FRESH -> ProgramState.DAG_PROCESSING_STARTED
+2026-02-06 23:48:35.371 | INFO     | gigaevo.runner.dag_runner:_launch:357 | [DagScheduler] launched c681e456-6b8f-429e-abcd-1a7a444477ec
+2026-02-06 23:48:35.371 | INFO     | gigaevo.programs.stages.base:execute:152 | [AncestorProgramIds] Executing for 6f19fb84
+2026-02-06 23:48:35.372 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][e889993e] Running=[] Launched=[] Finished=[]
+2026-02-06 23:48:35.372 | INFO     | gigaevo.programs.stages.collector:_collect_programs:92 | [AncestorProgramIds] Selected 0 programs for 6f19fb84-3f39-4e55-94ff-ebba6aabb13b with parents []
+2026-02-06 23:48:35.372 | DEBUG    | gigaevo.programs.stages.base:execute:193 | [AncestorProgramIds] ok in 0.00s
+2026-02-06 23:48:35.385 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][6f19fb84] Stage 'DescendantProgramIds' STARTED.
+2026-02-06 23:48:35.385 | DEBUG    | gigaevo.programs.dag.dag:_launch_ready:294 | [DAG][6f19fb84] Launched stages: ['AncestorProgramIds', 'DescendantProgramIds']
+2026-02-06 23:48:35.385 | INFO     | gigaevo.programs.stages.base:execute:152 | [DescendantProgramIds] Executing for 6f19fb84
+2026-02-06 23:48:35.385 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][e94f17bb] Stage 'AncestorProgramIds' FINALIZED as COMPLETED.
+2026-02-06 23:48:35.385 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][e94f17bb] Running=['DescendantProgramIds'] Launched=['AncestorProgramIds', 'DescendantProgramIds'] Finished=['AncestorProgramIds']
+2026-02-06 23:48:35.386 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][e889993e] Stage 'AncestorProgramIds' STARTED.
+2026-02-06 23:48:35.386 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][c681e456] Running=[] Launched=[] Finished=[]
+2026-02-06 23:48:35.386 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][6f19fb84] Collected result for 'AncestorProgramIds': type=ProgramStageResult
+2026-02-06 23:48:35.387 | INFO     | gigaevo.programs.stages.base:execute:152 | [AncestorProgramIds] Executing for e889993e
+2026-02-06 23:48:35.387 | INFO     | gigaevo.programs.stages.collector:_collect_programs:92 | [AncestorProgramIds] Selected 0 programs for e889993e-d080-4683-8eb4-d91fdb27b6bb with parents []
+2026-02-06 23:48:35.388 | DEBUG    | gigaevo.programs.stages.base:execute:193 | [AncestorProgramIds] ok in 0.00s
+2026-02-06 23:48:35.392 | INFO     | gigaevo.programs.stages.collector:_collect_programs:74 | [DescendantProgramIds] Selected 1 programs for 6f19fb84-3f39-4e55-94ff-ebba6aabb13b with children ['b0238c18-a2e1-43d1-a215-4f177dc2870d', 'e94f17bb-3962-43f3-9fe4-677d5018c575']
+2026-02-06 23:48:35.394 | DEBUG    | gigaevo.programs.stages.base:execute:193 | [DescendantProgramIds] ok in 0.01s
+2026-02-06 23:48:35.403 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][e889993e] Stage 'DescendantProgramIds' STARTED.
+2026-02-06 23:48:35.403 | DEBUG    | gigaevo.programs.dag.dag:_launch_ready:294 | [DAG][e889993e] Launched stages: ['AncestorProgramIds', 'DescendantProgramIds']
+2026-02-06 23:48:35.403 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][c681e456] Stage 'AncestorProgramIds' STARTED.
+2026-02-06 23:48:35.403 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][e94f17bb] Stage 'LineagesFromAncestors' STARTED.
+2026-02-06 23:48:35.403 | DEBUG    | gigaevo.programs.dag.dag:_launch_ready:294 | [DAG][e94f17bb] Launched stages: ['LineagesFromAncestors']
+2026-02-06 23:48:35.404 | INFO     | gigaevo.programs.stages.base:execute:152 | [DescendantProgramIds] Executing for e889993e
+2026-02-06 23:48:35.404 | INFO     | gigaevo.programs.stages.base:execute:152 | [AncestorProgramIds] Executing for c681e456
+2026-02-06 23:48:35.404 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][6f19fb84] Stage 'AncestorProgramIds' FINALIZED as COMPLETED.
+2026-02-06 23:48:35.404 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][6f19fb84] Running=['DescendantProgramIds'] Launched=['AncestorProgramIds', 'DescendantProgramIds'] Finished=['AncestorProgramIds']
+2026-02-06 23:48:35.404 | INFO     | gigaevo.programs.stages.base:execute:152 | [LineagesFromAncestors] Executing for e94f17bb
+2026-02-06 23:48:35.405 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][e889993e] Collected result for 'AncestorProgramIds': type=ProgramStageResult
+2026-02-06 23:48:35.405 | INFO     | gigaevo.programs.stages.collector:_collect_programs:92 | [AncestorProgramIds] Selected 0 programs for c681e456-6b8f-429e-abcd-1a7a444477ec with parents []
+2026-02-06 23:48:35.405 | INFO     | gigaevo.programs.stages.insights_lineage:compute:184 | [LineagesFromAncestors] Added transition analysis for 42f4e2c4-10c4-4eea-bedc-be73abeeedb0 -> e94f17bb-3962-43f3-9fe4-677d5018c575
+2026-02-06 23:48:35.405 | INFO     | gigaevo.programs.stages.insights_lineage:compute:184 | [LineagesFromAncestors] Added transition analysis for 6f19fb84-3f39-4e55-94ff-ebba6aabb13b -> e94f17bb-3962-43f3-9fe4-677d5018c575
+2026-02-06 23:48:35.406 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][e94f17bb] Collected result for 'DescendantProgramIds': type=ProgramStageResult
+2026-02-06 23:48:35.406 | DEBUG    | gigaevo.programs.stages.base:execute:193 | [AncestorProgramIds] ok in 0.00s
+2026-02-06 23:48:35.407 | DEBUG    | gigaevo.programs.stages.base:execute:193 | [LineagesFromAncestors] ok in 0.00s
+2026-02-06 23:48:35.414 | INFO     | gigaevo.programs.stages.collector:_collect_programs:74 | [DescendantProgramIds] Selected 1 programs for e889993e-d080-4683-8eb4-d91fdb27b6bb with children ['42f4e2c4-10c4-4eea-bedc-be73abeeedb0', '4ee12db7-b1c6-48e9-b961-5c100b394d1d', 'a117f9cb-ec46-4424-be28-7535061ed8d9']
+2026-02-06 23:48:35.421 | DEBUG    | gigaevo.programs.stages.base:execute:193 | [DescendantProgramIds] ok in 0.02s
+2026-02-06 23:48:35.422 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][c681e456] Stage 'DescendantProgramIds' STARTED.
+2026-02-06 23:48:35.422 | DEBUG    | gigaevo.programs.dag.dag:_launch_ready:294 | [DAG][c681e456] Launched stages: ['AncestorProgramIds', 'DescendantProgramIds']
+2026-02-06 23:48:35.422 | INFO     | gigaevo.programs.stages.base:execute:152 | [DescendantProgramIds] Executing for c681e456
+2026-02-06 23:48:35.422 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][6f19fb84] Stage 'LineagesFromAncestors' STARTED.
+2026-02-06 23:48:35.423 | DEBUG    | gigaevo.programs.dag.dag:_launch_ready:294 | [DAG][6f19fb84] Launched stages: ['LineagesFromAncestors']
+2026-02-06 23:48:35.423 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][e889993e] Stage 'AncestorProgramIds' FINALIZED as COMPLETED.
+2026-02-06 23:48:35.423 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][e889993e] Running=['DescendantProgramIds'] Launched=['AncestorProgramIds', 'DescendantProgramIds'] Finished=['AncestorProgramIds']
+2026-02-06 23:48:35.423 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][c681e456] Collected result for 'AncestorProgramIds': type=ProgramStageResult
+2026-02-06 23:48:35.423 | INFO     | gigaevo.programs.stages.base:execute:152 | [LineagesFromAncestors] Executing for 6f19fb84
+2026-02-06 23:48:35.424 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][6f19fb84] Collected result for 'DescendantProgramIds': type=ProgramStageResult
+2026-02-06 23:48:35.425 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][e94f17bb] Stage 'DescendantProgramIds' FINALIZED as COMPLETED.
+2026-02-06 23:48:35.425 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][e94f17bb] Running=['LineagesFromAncestors'] Launched=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors'] Finished=['AncestorProgramIds', 'DescendantProgramIds']
+2026-02-06 23:48:35.426 | DEBUG    | gigaevo.programs.stages.base:execute:164 | [LineagesFromAncestors] ok (pass-through) in 0.00s
+2026-02-06 23:48:35.431 | INFO     | gigaevo.programs.stages.collector:_collect_programs:74 | [DescendantProgramIds] Selected 1 programs for c681e456-6b8f-429e-abcd-1a7a444477ec with children ['9770da19-c192-4f7d-806d-8aa63150d0e2', '4ee12db7-b1c6-48e9-b961-5c100b394d1d', 'a319049e-49f6-4a9c-8741-c50b1cd8e08d']
+2026-02-06 23:48:35.435 | DEBUG    | gigaevo.programs.stages.base:execute:193 | [DescendantProgramIds] ok in 0.01s
+2026-02-06 23:48:35.441 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][e889993e] Stage 'LineagesFromAncestors' STARTED.
+2026-02-06 23:48:35.441 | DEBUG    | gigaevo.programs.dag.dag:_launch_ready:294 | [DAG][e889993e] Launched stages: ['LineagesFromAncestors']
+2026-02-06 23:48:35.441 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][c681e456] Stage 'AncestorProgramIds' FINALIZED as COMPLETED.
+2026-02-06 23:48:35.441 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][c681e456] Running=['DescendantProgramIds'] Launched=['AncestorProgramIds', 'DescendantProgramIds'] Finished=['AncestorProgramIds']
+2026-02-06 23:48:35.442 | INFO     | gigaevo.programs.stages.base:execute:152 | [LineagesFromAncestors] Executing for e889993e
+2026-02-06 23:48:35.442 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][6f19fb84] Stage 'DescendantProgramIds' FINALIZED as COMPLETED.
+2026-02-06 23:48:35.442 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][6f19fb84] Running=['LineagesFromAncestors'] Launched=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors'] Finished=['AncestorProgramIds', 'DescendantProgramIds']
+2026-02-06 23:48:35.442 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][e889993e] Collected result for 'DescendantProgramIds': type=ProgramStageResult
+2026-02-06 23:48:35.443 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][e94f17bb] Stage 'LineagesToDescendants' STARTED.
+2026-02-06 23:48:35.443 | DEBUG    | gigaevo.programs.dag.dag:_launch_ready:294 | [DAG][e94f17bb] Launched stages: ['LineagesToDescendants']
+2026-02-06 23:48:35.443 | INFO     | gigaevo.programs.stages.base:execute:152 | [LineagesToDescendants] Executing for e94f17bb
+2026-02-06 23:48:35.444 | DEBUG    | gigaevo.programs.stages.base:execute:164 | [LineagesFromAncestors] ok (pass-through) in 0.00s
+2026-02-06 23:48:35.444 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][e94f17bb] Collected result for 'LineagesFromAncestors': type=ProgramStageResult
+2026-02-06 23:48:35.445 | DEBUG    | gigaevo.programs.stages.base:execute:164 | [LineagesToDescendants] ok (pass-through) in 0.00s
+2026-02-06 23:48:35.455 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][c681e456] Stage 'LineagesFromAncestors' STARTED.
+2026-02-06 23:48:35.455 | DEBUG    | gigaevo.programs.dag.dag:_launch_ready:294 | [DAG][c681e456] Launched stages: ['LineagesFromAncestors']
+2026-02-06 23:48:35.455 | INFO     | gigaevo.programs.stages.base:execute:152 | [LineagesFromAncestors] Executing for c681e456
+2026-02-06 23:48:35.455 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][6f19fb84] Stage 'LineagesToDescendants' STARTED.
+2026-02-06 23:48:35.455 | DEBUG    | gigaevo.programs.dag.dag:_launch_ready:294 | [DAG][6f19fb84] Launched stages: ['LineagesToDescendants']
+2026-02-06 23:48:35.455 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][e889993e] Stage 'DescendantProgramIds' FINALIZED as COMPLETED.
+2026-02-06 23:48:35.456 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][e889993e] Running=['LineagesFromAncestors'] Launched=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors'] Finished=['AncestorProgramIds', 'DescendantProgramIds']
+2026-02-06 23:48:35.456 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][c681e456] Collected result for 'DescendantProgramIds': type=ProgramStageResult
+2026-02-06 23:48:35.456 | INFO     | gigaevo.programs.stages.base:execute:152 | [LineagesToDescendants] Executing for 6f19fb84
+2026-02-06 23:48:35.459 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][6f19fb84] Collected result for 'LineagesFromAncestors': type=ProgramStageResult
+2026-02-06 23:48:35.459 | DEBUG    | gigaevo.programs.stages.base:execute:164 | [LineagesFromAncestors] ok (pass-through) in 0.00s
+2026-02-06 23:48:35.460 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][e94f17bb] Stage 'LineagesFromAncestors' FINALIZED as COMPLETED.
+2026-02-06 23:48:35.460 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][e94f17bb] Running=['LineagesToDescendants'] Launched=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors', 'LineagesToDescendants'] Finished=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors']
+2026-02-06 23:48:35.460 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][e94f17bb] Collected result for 'LineagesToDescendants': type=ProgramStageResult
+2026-02-06 23:48:35.463 | INFO     | gigaevo.programs.stages.insights_lineage:compute:125 | [LineagesToDescendants] Added transition analysis for 6f19fb84-3f39-4e55-94ff-ebba6aabb13b -> b0238c18-a2e1-43d1-a215-4f177dc2870d
+2026-02-06 23:48:35.464 | DEBUG    | gigaevo.programs.stages.base:execute:193 | [LineagesToDescendants] ok in 0.01s
+2026-02-06 23:48:35.472 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][e889993e] Stage 'LineagesToDescendants' STARTED.
+2026-02-06 23:48:35.472 | DEBUG    | gigaevo.programs.dag.dag:_launch_ready:294 | [DAG][e889993e] Launched stages: ['LineagesToDescendants']
+2026-02-06 23:48:35.472 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][c681e456] Stage 'DescendantProgramIds' FINALIZED as COMPLETED.
+2026-02-06 23:48:35.472 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][c681e456] Running=['LineagesFromAncestors'] Launched=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors'] Finished=['AncestorProgramIds', 'DescendantProgramIds']
+2026-02-06 23:48:35.473 | INFO     | gigaevo.programs.stages.base:execute:152 | [LineagesToDescendants] Executing for e889993e
+2026-02-06 23:48:35.473 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][6f19fb84] Stage 'LineagesFromAncestors' FINALIZED as SKIPPED.
+2026-02-06 23:48:35.474 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][6f19fb84] Running=['LineagesToDescendants'] Launched=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors', 'LineagesToDescendants'] Finished=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors']
+2026-02-06 23:48:35.474 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][e889993e] Collected result for 'LineagesFromAncestors': type=ProgramStageResult
+2026-02-06 23:48:35.475 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][6f19fb84] Collected result for 'LineagesToDescendants': type=ProgramStageResult
+2026-02-06 23:48:35.478 | INFO     | gigaevo.programs.stages.insights_lineage:compute:125 | [LineagesToDescendants] Added transition analysis for e889993e-d080-4683-8eb4-d91fdb27b6bb -> 4ee12db7-b1c6-48e9-b961-5c100b394d1d
+2026-02-06 23:48:35.479 | DEBUG    | gigaevo.programs.stages.base:execute:193 | [LineagesToDescendants] ok in 0.01s
+2026-02-06 23:48:35.479 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][e94f17bb] Stage 'LineagesToDescendants' FINALIZED as SKIPPED.
+2026-02-06 23:48:35.479 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][e94f17bb] Running=[] Launched=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors', 'LineagesToDescendants'] Finished=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors', 'LineagesToDescendants']
+2026-02-06 23:48:35.485 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][c681e456] Stage 'LineagesToDescendants' STARTED.
+2026-02-06 23:48:35.485 | DEBUG    | gigaevo.programs.dag.dag:_launch_ready:294 | [DAG][c681e456] Launched stages: ['LineagesToDescendants']
+2026-02-06 23:48:35.488 | INFO     | gigaevo.programs.stages.base:execute:152 | [LineagesToDescendants] Executing for c681e456
+2026-02-06 23:48:35.489 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][e889993e] Stage 'LineagesFromAncestors' FINALIZED as SKIPPED.
+2026-02-06 23:48:35.489 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][e889993e] Running=['LineagesToDescendants'] Launched=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors', 'LineagesToDescendants'] Finished=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors']
+2026-02-06 23:48:35.489 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][c681e456] Collected result for 'LineagesFromAncestors': type=ProgramStageResult
+2026-02-06 23:48:35.491 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][6f19fb84] Stage 'LineagesToDescendants' FINALIZED as COMPLETED.
+2026-02-06 23:48:35.491 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][6f19fb84] Running=[] Launched=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors', 'LineagesToDescendants'] Finished=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors', 'LineagesToDescendants']
+2026-02-06 23:48:35.491 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][e889993e] Collected result for 'LineagesToDescendants': type=ProgramStageResult
+2026-02-06 23:48:35.493 | INFO     | gigaevo.programs.stages.insights_lineage:compute:125 | [LineagesToDescendants] Added transition analysis for c681e456-6b8f-429e-abcd-1a7a444477ec -> 4ee12db7-b1c6-48e9-b961-5c100b394d1d
+2026-02-06 23:48:35.495 | DEBUG    | gigaevo.programs.stages.base:execute:193 | [LineagesToDescendants] ok in 0.01s
+2026-02-06 23:48:35.496 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][e94f17bb] Stage 'MutationContextStage' STARTED.
+2026-02-06 23:48:35.496 | DEBUG    | gigaevo.programs.dag.dag:_launch_ready:294 | [DAG][e94f17bb] Launched stages: ['MutationContextStage']
+2026-02-06 23:48:35.496 | INFO     | gigaevo.programs.stages.base:execute:152 | [MutationContextStage] Executing for e94f17bb
+2026-02-06 23:48:35.499 | DEBUG    | gigaevo.evolution.mutation.context:format:74 | [FamilyTreeMutationContext] Formatting with 2 ancestors and 0 descendants
+2026-02-06 23:48:35.502 | DEBUG    | gigaevo.programs.stages.base:execute:193 | [MutationContextStage] ok in 0.01s
+2026-02-06 23:48:35.505 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][e94f17bb] Collected result for 'MutationContextStage': type=ProgramStageResult
+2026-02-06 23:48:35.506 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][c681e456] Stage 'LineagesFromAncestors' FINALIZED as SKIPPED.
+2026-02-06 23:48:35.506 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][c681e456] Running=['LineagesToDescendants'] Launched=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors', 'LineagesToDescendants'] Finished=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors']
+2026-02-06 23:48:35.507 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][e889993e] Stage 'LineagesToDescendants' FINALIZED as COMPLETED.
+2026-02-06 23:48:35.507 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][e889993e] Running=[] Launched=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors', 'LineagesToDescendants'] Finished=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors', 'LineagesToDescendants']
+2026-02-06 23:48:35.507 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][6f19fb84] Stage 'MutationContextStage' STARTED.
+2026-02-06 23:48:35.507 | DEBUG    | gigaevo.programs.dag.dag:_launch_ready:294 | [DAG][6f19fb84] Launched stages: ['MutationContextStage']
+2026-02-06 23:48:35.507 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][c681e456] Collected result for 'LineagesToDescendants': type=ProgramStageResult
+2026-02-06 23:48:35.508 | INFO     | gigaevo.programs.stages.base:execute:152 | [MutationContextStage] Executing for 6f19fb84
+2026-02-06 23:48:35.508 | DEBUG    | gigaevo.evolution.mutation.context:format:74 | [FamilyTreeMutationContext] Formatting with 0 ancestors and 1 descendants
+2026-02-06 23:48:35.509 | DEBUG    | gigaevo.programs.stages.base:execute:193 | [MutationContextStage] ok in 0.00s
+2026-02-06 23:48:35.510 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][6f19fb84] Collected result for 'MutationContextStage': type=ProgramStageResult
+2026-02-06 23:48:35.518 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][e94f17bb] Stage 'MutationContextStage' FINALIZED as COMPLETED.
+2026-02-06 23:48:35.518 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][e94f17bb] Running=[] Launched=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors', 'LineagesToDescendants', 'MutationContextStage'] Finished=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors', 'LineagesToDescendants', 'MutationContextStage']
+2026-02-06 23:48:35.518 | INFO     | gigaevo.programs.dag.dag:_run_internal:213 | [DAG][e94f17bb] Idle & no pending work — terminating.
+2026-02-06 23:48:35.518 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][e889993e] Stage 'MutationContextStage' STARTED.
+2026-02-06 23:48:35.518 | DEBUG    | gigaevo.programs.dag.dag:_launch_ready:294 | [DAG][e889993e] Launched stages: ['MutationContextStage']
+2026-02-06 23:48:35.518 | INFO     | gigaevo.programs.stages.base:execute:152 | [MutationContextStage] Executing for e889993e
+2026-02-06 23:48:35.519 | DEBUG    | gigaevo.database.state_manager:set_program_state:66 | [ProgramStateManager] Setting program e94f17bb state from ProgramState.DAG_PROCESSING_STARTED to ProgramState.DAG_PROCESSING_COMPLETED
+2026-02-06 23:48:35.519 | DEBUG    | gigaevo.database.state_manager:set_program_state:87 | [ProgramStateManager] Updated program e94f17bb state to ProgramState.DAG_PROCESSING_COMPLETED
+2026-02-06 23:48:35.519 | DEBUG    | gigaevo.evolution.mutation.context:format:74 | [FamilyTreeMutationContext] Formatting with 0 ancestors and 1 descendants
+2026-02-06 23:48:35.520 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][c681e456] Stage 'LineagesToDescendants' FINALIZED as COMPLETED.
+2026-02-06 23:48:35.520 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][c681e456] Running=[] Launched=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors', 'LineagesToDescendants'] Finished=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors', 'LineagesToDescendants']
+2026-02-06 23:48:35.520 | DEBUG    | gigaevo.programs.stages.base:execute:193 | [MutationContextStage] ok in 0.00s
+2026-02-06 23:48:35.524 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][e889993e] Collected result for 'MutationContextStage': type=ProgramStageResult
+2026-02-06 23:48:35.526 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][6f19fb84] Stage 'MutationContextStage' FINALIZED as COMPLETED.
+2026-02-06 23:48:35.526 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][6f19fb84] Running=[] Launched=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors', 'LineagesToDescendants', 'MutationContextStage'] Finished=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors', 'LineagesToDescendants', 'MutationContextStage']
+2026-02-06 23:48:35.526 | INFO     | gigaevo.programs.dag.dag:_run_internal:213 | [DAG][6f19fb84] Idle & no pending work — terminating.
+2026-02-06 23:48:35.527 | DEBUG    | gigaevo.database.state_manager:set_program_state:66 | [ProgramStateManager] Setting program 6f19fb84 state from ProgramState.DAG_PROCESSING_STARTED to ProgramState.DAG_PROCESSING_COMPLETED
+2026-02-06 23:48:35.527 | DEBUG    | gigaevo.database.state_manager:set_program_state:87 | [ProgramStateManager] Updated program 6f19fb84 state to ProgramState.DAG_PROCESSING_COMPLETED
+2026-02-06 23:48:35.532 | DEBUG    | gigaevo.database.state_manager:set_program_state:94 | [ProgramStateManager] Atomically transitioned e94f17bb state ProgramState.DAG_PROCESSING_STARTED -> ProgramState.DAG_PROCESSING_COMPLETED
+2026-02-06 23:48:35.532 | DEBUG    | gigaevo.runner.dag_runner:_execute_dag:397 | [DagScheduler] DAG completed for e94f17bb-3962-43f3-9fe4-677d5018c575 (state updated)
+2026-02-06 23:48:35.533 | DEBUG    | gigaevo.runner.dag_runner:_maintain:268 | [DagScheduler] harvested completed task for program e94f17bb-3962-43f3-9fe4-677d5018c575
+2026-02-06 23:48:35.655 | DEBUG    | gigaevo.runner.dag_runner:_maintain:280 | [DagScheduler] Cleaned up 1 finished + 0 timed out tasks, forced GC
+2026-02-06 23:48:35.659 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][c681e456] Stage 'MutationContextStage' STARTED.
+2026-02-06 23:48:35.659 | DEBUG    | gigaevo.programs.dag.dag:_launch_ready:294 | [DAG][c681e456] Launched stages: ['MutationContextStage']
+2026-02-06 23:48:35.659 | INFO     | gigaevo.programs.stages.base:execute:152 | [MutationContextStage] Executing for c681e456
+2026-02-06 23:48:35.659 | DEBUG    | gigaevo.evolution.mutation.context:format:74 | [FamilyTreeMutationContext] Formatting with 0 ancestors and 1 descendants
+2026-02-06 23:48:35.660 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][e889993e] Stage 'MutationContextStage' FINALIZED as COMPLETED.
+2026-02-06 23:48:35.660 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][e889993e] Running=[] Launched=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors', 'LineagesToDescendants', 'MutationContextStage'] Finished=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors', 'LineagesToDescendants', 'MutationContextStage']
+2026-02-06 23:48:35.660 | INFO     | gigaevo.programs.dag.dag:_run_internal:213 | [DAG][e889993e] Idle & no pending work — terminating.
+2026-02-06 23:48:35.664 | DEBUG    | gigaevo.programs.stages.base:execute:193 | [MutationContextStage] ok in 0.00s
+2026-02-06 23:48:35.664 | DEBUG    | gigaevo.database.state_manager:set_program_state:66 | [ProgramStateManager] Setting program e889993e state from ProgramState.DAG_PROCESSING_STARTED to ProgramState.DAG_PROCESSING_COMPLETED
+2026-02-06 23:48:35.664 | DEBUG    | gigaevo.database.state_manager:set_program_state:87 | [ProgramStateManager] Updated program e889993e state to ProgramState.DAG_PROCESSING_COMPLETED
+2026-02-06 23:48:35.665 | DEBUG    | gigaevo.database.state_manager:set_program_state:94 | [ProgramStateManager] Atomically transitioned 6f19fb84 state ProgramState.DAG_PROCESSING_STARTED -> ProgramState.DAG_PROCESSING_COMPLETED
+2026-02-06 23:48:35.665 | DEBUG    | gigaevo.runner.dag_runner:_execute_dag:397 | [DagScheduler] DAG completed for 6f19fb84-3f39-4e55-94ff-ebba6aabb13b (state updated)
+2026-02-06 23:48:35.665 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][c681e456] Collected result for 'MutationContextStage': type=ProgramStageResult
+2026-02-06 23:48:35.671 | DEBUG    | gigaevo.llm.models:__init__:86 | [MultiModelRouter] Langfuse tracing is disabled. Set LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY environment variables to enable tracing.
+2026-02-06 23:48:35.671 | INFO     | gigaevo.llm.models:__init__:91 | [MultiModelRouter] Initialized with 1 models
+2026-02-06 23:48:35.673 | INFO     | gigaevo.llm.agents.base:__init__:62 | [InsightsAgent] Initialized
+2026-02-06 23:48:35.673 | INFO     | gigaevo.programs.stages.langgraph_stage:__init__:52 | [InsightsStage] Initialized with agent=InsightsAgent program_kwarg=program
+2026-02-06 23:48:35.674 | DEBUG    | gigaevo.llm.models:__init__:86 | [MultiModelRouter] Langfuse tracing is disabled. Set LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY environment variables to enable tracing.
+2026-02-06 23:48:35.674 | INFO     | gigaevo.llm.models:__init__:91 | [MultiModelRouter] Initialized with 1 models
+2026-02-06 23:48:35.677 | INFO     | gigaevo.llm.agents.base:__init__:62 | [LineageAgent] Initialized
+2026-02-06 23:48:35.677 | INFO     | gigaevo.programs.stages.langgraph_stage:__init__:52 | [LineageStage] Initialized with agent=LineageAgent program_kwarg=program
+2026-02-06 23:48:35.678 | DEBUG    | gigaevo.database.state_manager:set_program_state:66 | [ProgramStateManager] Setting program 8cc93180 state from ProgramState.FRESH to ProgramState.DAG_PROCESSING_STARTED
+2026-02-06 23:48:35.678 | DEBUG    | gigaevo.database.state_manager:set_program_state:87 | [ProgramStateManager] Updated program 8cc93180 state to ProgramState.DAG_PROCESSING_STARTED
+2026-02-06 23:48:35.678 | DEBUG    | gigaevo.programs.dag.dag:run:65 | [DAG][8cc93180] Run started
+2026-02-06 23:48:35.683 | DEBUG    | gigaevo.database.state_manager:set_program_state:94 | [ProgramStateManager] Atomically transitioned e889993e state ProgramState.DAG_PROCESSING_STARTED -> ProgramState.DAG_PROCESSING_COMPLETED
+2026-02-06 23:48:35.683 | DEBUG    | gigaevo.runner.dag_runner:_execute_dag:397 | [DagScheduler] DAG completed for e889993e-d080-4683-8eb4-d91fdb27b6bb (state updated)
+2026-02-06 23:48:35.683 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][c681e456] Stage 'MutationContextStage' FINALIZED as COMPLETED.
+2026-02-06 23:48:35.684 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][c681e456] Running=[] Launched=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors', 'LineagesToDescendants', 'MutationContextStage'] Finished=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors', 'LineagesToDescendants', 'MutationContextStage']
+2026-02-06 23:48:35.684 | INFO     | gigaevo.programs.dag.dag:_run_internal:213 | [DAG][c681e456] Idle & no pending work — terminating.
+2026-02-06 23:48:35.685 | DEBUG    | gigaevo.database.state_manager:set_program_state:66 | [ProgramStateManager] Setting program c681e456 state from ProgramState.DAG_PROCESSING_STARTED to ProgramState.DAG_PROCESSING_COMPLETED
+2026-02-06 23:48:35.685 | DEBUG    | gigaevo.database.state_manager:set_program_state:87 | [ProgramStateManager] Updated program c681e456 state to ProgramState.DAG_PROCESSING_COMPLETED
+2026-02-06 23:48:35.692 | DEBUG    | gigaevo.database.state_manager:set_program_state:94 | [ProgramStateManager] Atomically transitioned 8cc93180 state ProgramState.FRESH -> ProgramState.DAG_PROCESSING_STARTED
+2026-02-06 23:48:35.692 | INFO     | gigaevo.runner.dag_runner:_launch:357 | [DagScheduler] launched 8cc93180-b0ac-4626-84bb-ee00ab5796a5
+2026-02-06 23:48:35.693 | DEBUG    | gigaevo.llm.models:__init__:86 | [MultiModelRouter] Langfuse tracing is disabled. Set LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY environment variables to enable tracing.
+2026-02-06 23:48:35.693 | INFO     | gigaevo.llm.models:__init__:91 | [MultiModelRouter] Initialized with 1 models
+2026-02-06 23:48:35.695 | INFO     | gigaevo.llm.agents.base:__init__:62 | [InsightsAgent] Initialized
+2026-02-06 23:48:35.695 | INFO     | gigaevo.programs.stages.langgraph_stage:__init__:52 | [InsightsStage] Initialized with agent=InsightsAgent program_kwarg=program
+2026-02-06 23:48:35.696 | DEBUG    | gigaevo.llm.models:__init__:86 | [MultiModelRouter] Langfuse tracing is disabled. Set LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY environment variables to enable tracing.
+2026-02-06 23:48:35.696 | INFO     | gigaevo.llm.models:__init__:91 | [MultiModelRouter] Initialized with 1 models
+2026-02-06 23:48:35.699 | INFO     | gigaevo.llm.agents.base:__init__:62 | [LineageAgent] Initialized
+2026-02-06 23:48:35.699 | INFO     | gigaevo.programs.stages.langgraph_stage:__init__:52 | [LineageStage] Initialized with agent=LineageAgent program_kwarg=program
+2026-02-06 23:48:35.699 | DEBUG    | gigaevo.database.state_manager:set_program_state:66 | [ProgramStateManager] Setting program 42f4e2c4 state from ProgramState.FRESH to ProgramState.DAG_PROCESSING_STARTED
+2026-02-06 23:48:35.700 | DEBUG    | gigaevo.database.state_manager:set_program_state:87 | [ProgramStateManager] Updated program 42f4e2c4 state to ProgramState.DAG_PROCESSING_STARTED
+2026-02-06 23:48:35.700 | DEBUG    | gigaevo.programs.dag.dag:run:65 | [DAG][42f4e2c4] Run started
+2026-02-06 23:48:35.704 | DEBUG    | gigaevo.database.state_manager:set_program_state:94 | [ProgramStateManager] Atomically transitioned c681e456 state ProgramState.DAG_PROCESSING_STARTED -> ProgramState.DAG_PROCESSING_COMPLETED
+2026-02-06 23:48:35.704 | DEBUG    | gigaevo.runner.dag_runner:_execute_dag:397 | [DagScheduler] DAG completed for c681e456-6b8f-429e-abcd-1a7a444477ec (state updated)
+2026-02-06 23:48:35.720 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][8cc93180] Running=[] Launched=[] Finished=[]
+2026-02-06 23:48:35.721 | DEBUG    | gigaevo.database.state_manager:set_program_state:94 | [ProgramStateManager] Atomically transitioned 42f4e2c4 state ProgramState.FRESH -> ProgramState.DAG_PROCESSING_STARTED
+2026-02-06 23:48:35.721 | INFO     | gigaevo.runner.dag_runner:_launch:357 | [DagScheduler] launched 42f4e2c4-10c4-4eea-bedc-be73abeeedb0
+2026-02-06 23:48:35.730 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][8cc93180] Stage 'AncestorProgramIds' STARTED.
+2026-02-06 23:48:35.730 | INFO     | gigaevo.programs.stages.base:execute:152 | [AncestorProgramIds] Executing for 8cc93180
+2026-02-06 23:48:35.737 | INFO     | gigaevo.programs.stages.collector:_collect_programs:92 | [AncestorProgramIds] Selected 0 programs for 8cc93180-b0ac-4626-84bb-ee00ab5796a5 with parents []
+2026-02-06 23:48:35.738 | DEBUG    | gigaevo.programs.stages.base:execute:193 | [AncestorProgramIds] ok in 0.01s
+2026-02-06 23:48:35.738 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][42f4e2c4] Running=[] Launched=[] Finished=[]
+2026-02-06 23:48:35.746 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][8cc93180] Stage 'DescendantProgramIds' STARTED.
+2026-02-06 23:48:35.746 | DEBUG    | gigaevo.programs.dag.dag:_launch_ready:294 | [DAG][8cc93180] Launched stages: ['AncestorProgramIds', 'DescendantProgramIds']
+2026-02-06 23:48:35.746 | INFO     | gigaevo.programs.stages.base:execute:152 | [DescendantProgramIds] Executing for 8cc93180
+2026-02-06 23:48:35.747 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][8cc93180] Collected result for 'AncestorProgramIds': type=ProgramStageResult
+2026-02-06 23:48:35.756 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][42f4e2c4] Stage 'AncestorProgramIds' STARTED.
+2026-02-06 23:48:35.757 | INFO     | gigaevo.programs.stages.base:execute:152 | [AncestorProgramIds] Executing for 42f4e2c4
+2026-02-06 23:48:35.770 | INFO     | gigaevo.programs.stages.collector:_collect_programs:74 | [DescendantProgramIds] Selected 1 programs for 8cc93180-b0ac-4626-84bb-ee00ab5796a5 with children ['b0238c18-a2e1-43d1-a215-4f177dc2870d', '42f4e2c4-10c4-4eea-bedc-be73abeeedb0', '9770da19-c192-4f7d-806d-8aa63150d0e2', '378a56f5-e0d5-47be-9aee-0109f14527a9']
+2026-02-06 23:48:35.771 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][8cc93180] Stage 'AncestorProgramIds' FINALIZED as COMPLETED.
+2026-02-06 23:48:35.771 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][8cc93180] Running=['DescendantProgramIds'] Launched=['AncestorProgramIds', 'DescendantProgramIds'] Finished=['AncestorProgramIds']
+2026-02-06 23:48:35.771 | DEBUG    | gigaevo.programs.stages.base:execute:193 | [DescendantProgramIds] ok in 0.03s
+2026-02-06 23:48:35.772 | INFO     | gigaevo.programs.stages.collector:_collect_programs:92 | [AncestorProgramIds] Selected 2 programs for 42f4e2c4-10c4-4eea-bedc-be73abeeedb0 with parents ['8cc93180-b0ac-4626-84bb-ee00ab5796a5', 'e889993e-d080-4683-8eb4-d91fdb27b6bb']
+2026-02-06 23:48:35.774 | DEBUG    | gigaevo.programs.stages.base:execute:193 | [AncestorProgramIds] ok in 0.02s
+2026-02-06 23:48:35.782 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][42f4e2c4] Stage 'DescendantProgramIds' STARTED.
+2026-02-06 23:48:35.783 | DEBUG    | gigaevo.programs.dag.dag:_launch_ready:294 | [DAG][42f4e2c4] Launched stages: ['AncestorProgramIds', 'DescendantProgramIds']
+2026-02-06 23:48:35.783 | INFO     | gigaevo.programs.stages.base:execute:152 | [DescendantProgramIds] Executing for 42f4e2c4
+2026-02-06 23:48:35.789 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][42f4e2c4] Collected result for 'AncestorProgramIds': type=ProgramStageResult
+2026-02-06 23:48:35.790 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][8cc93180] Stage 'LineagesFromAncestors' STARTED.
+2026-02-06 23:48:35.790 | DEBUG    | gigaevo.programs.dag.dag:_launch_ready:294 | [DAG][8cc93180] Launched stages: ['LineagesFromAncestors']
+2026-02-06 23:48:35.791 | INFO     | gigaevo.programs.stages.base:execute:152 | [LineagesFromAncestors] Executing for 8cc93180
+2026-02-06 23:48:35.791 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][8cc93180] Collected result for 'DescendantProgramIds': type=ProgramStageResult
+2026-02-06 23:48:35.792 | DEBUG    | gigaevo.programs.stages.base:execute:164 | [LineagesFromAncestors] ok (pass-through) in 0.00s
+2026-02-06 23:48:35.795 | INFO     | gigaevo.programs.stages.collector:_collect_programs:74 | [DescendantProgramIds] Selected 1 programs for 42f4e2c4-10c4-4eea-bedc-be73abeeedb0 with children ['378a56f5-e0d5-47be-9aee-0109f14527a9', 'a117f9cb-ec46-4424-be28-7535061ed8d9', 'e94f17bb-3962-43f3-9fe4-677d5018c575', 'a319049e-49f6-4a9c-8741-c50b1cd8e08d']
+2026-02-06 23:48:35.797 | DEBUG    | gigaevo.programs.stages.base:execute:193 | [DescendantProgramIds] ok in 0.01s
+2026-02-06 23:48:35.811 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][42f4e2c4] Stage 'AncestorProgramIds' FINALIZED as COMPLETED.
+2026-02-06 23:48:35.811 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][42f4e2c4] Running=['DescendantProgramIds'] Launched=['AncestorProgramIds', 'DescendantProgramIds'] Finished=['AncestorProgramIds']
+2026-02-06 23:48:35.812 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][8cc93180] Stage 'DescendantProgramIds' FINALIZED as COMPLETED.
+2026-02-06 23:48:35.812 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][8cc93180] Running=['LineagesFromAncestors'] Launched=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors'] Finished=['AncestorProgramIds', 'DescendantProgramIds']
+2026-02-06 23:48:35.828 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][8cc93180] Stage 'LineagesToDescendants' STARTED.
+2026-02-06 23:48:35.828 | DEBUG    | gigaevo.programs.dag.dag:_launch_ready:294 | [DAG][8cc93180] Launched stages: ['LineagesToDescendants']
+2026-02-06 23:48:35.828 | INFO     | gigaevo.programs.stages.base:execute:152 | [LineagesToDescendants] Executing for 8cc93180
+2026-02-06 23:48:35.828 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][42f4e2c4] Stage 'LineagesFromAncestors' STARTED.
+2026-02-06 23:48:35.829 | DEBUG    | gigaevo.programs.dag.dag:_launch_ready:294 | [DAG][42f4e2c4] Launched stages: ['LineagesFromAncestors']
+2026-02-06 23:48:35.829 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][8cc93180] Collected result for 'LineagesFromAncestors': type=ProgramStageResult
+2026-02-06 23:48:35.829 | INFO     | gigaevo.programs.stages.base:execute:152 | [LineagesFromAncestors] Executing for 42f4e2c4
+2026-02-06 23:48:35.829 | INFO     | gigaevo.programs.stages.insights_lineage:compute:184 | [LineagesFromAncestors] Added transition analysis for 8cc93180-b0ac-4626-84bb-ee00ab5796a5 -> 42f4e2c4-10c4-4eea-bedc-be73abeeedb0
+2026-02-06 23:48:35.830 | INFO     | gigaevo.programs.stages.insights_lineage:compute:184 | [LineagesFromAncestors] Added transition analysis for e889993e-d080-4683-8eb4-d91fdb27b6bb -> 42f4e2c4-10c4-4eea-bedc-be73abeeedb0
+2026-02-06 23:48:35.830 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][42f4e2c4] Collected result for 'DescendantProgramIds': type=ProgramStageResult
+2026-02-06 23:48:35.830 | DEBUG    | gigaevo.programs.stages.base:execute:193 | [LineagesFromAncestors] ok in 0.00s
+2026-02-06 23:48:35.832 | INFO     | gigaevo.programs.stages.insights_lineage:compute:125 | [LineagesToDescendants] Added transition analysis for 8cc93180-b0ac-4626-84bb-ee00ab5796a5 -> b0238c18-a2e1-43d1-a215-4f177dc2870d
+2026-02-06 23:48:35.834 | DEBUG    | gigaevo.programs.stages.base:execute:193 | [LineagesToDescendants] ok in 0.01s
+2026-02-06 23:48:35.848 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][8cc93180] Stage 'LineagesFromAncestors' FINALIZED as SKIPPED.
+2026-02-06 23:48:35.848 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][8cc93180] Running=['LineagesToDescendants'] Launched=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors', 'LineagesToDescendants'] Finished=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors']
+2026-02-06 23:48:35.848 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][8cc93180] Collected result for 'LineagesToDescendants': type=ProgramStageResult
+2026-02-06 23:48:35.848 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][42f4e2c4] Stage 'DescendantProgramIds' FINALIZED as COMPLETED.
+2026-02-06 23:48:35.849 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][42f4e2c4] Running=['LineagesFromAncestors'] Launched=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors'] Finished=['AncestorProgramIds', 'DescendantProgramIds']
+2026-02-06 23:48:35.865 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][8cc93180] Stage 'LineagesToDescendants' FINALIZED as COMPLETED.
+2026-02-06 23:48:35.865 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][8cc93180] Running=[] Launched=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors', 'LineagesToDescendants'] Finished=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors', 'LineagesToDescendants']
+2026-02-06 23:48:35.865 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][42f4e2c4] Stage 'LineagesToDescendants' STARTED.
+2026-02-06 23:48:35.865 | DEBUG    | gigaevo.programs.dag.dag:_launch_ready:294 | [DAG][42f4e2c4] Launched stages: ['LineagesToDescendants']
+2026-02-06 23:48:35.866 | INFO     | gigaevo.programs.stages.base:execute:152 | [LineagesToDescendants] Executing for 42f4e2c4
+2026-02-06 23:48:35.866 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][42f4e2c4] Collected result for 'LineagesFromAncestors': type=ProgramStageResult
+2026-02-06 23:48:35.869 | INFO     | gigaevo.programs.stages.insights_lineage:compute:125 | [LineagesToDescendants] Added transition analysis for 42f4e2c4-10c4-4eea-bedc-be73abeeedb0 -> 378a56f5-e0d5-47be-9aee-0109f14527a9
+2026-02-06 23:48:35.876 | DEBUG    | gigaevo.programs.stages.base:execute:193 | [LineagesToDescendants] ok in 0.01s
+2026-02-06 23:48:35.883 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][8cc93180] Stage 'MutationContextStage' STARTED.
+2026-02-06 23:48:35.883 | DEBUG    | gigaevo.programs.dag.dag:_launch_ready:294 | [DAG][8cc93180] Launched stages: ['MutationContextStage']
+2026-02-06 23:48:35.884 | INFO     | gigaevo.programs.stages.base:execute:152 | [MutationContextStage] Executing for 8cc93180
+2026-02-06 23:48:35.884 | DEBUG    | gigaevo.evolution.mutation.context:format:74 | [FamilyTreeMutationContext] Formatting with 0 ancestors and 1 descendants
+2026-02-06 23:48:35.884 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][42f4e2c4] Stage 'LineagesFromAncestors' FINALIZED as COMPLETED.
+2026-02-06 23:48:35.884 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][42f4e2c4] Running=['LineagesToDescendants'] Launched=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors', 'LineagesToDescendants'] Finished=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors']
+2026-02-06 23:48:35.885 | DEBUG    | gigaevo.programs.stages.base:execute:193 | [MutationContextStage] ok in 0.00s
+2026-02-06 23:48:35.885 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][42f4e2c4] Collected result for 'LineagesToDescendants': type=ProgramStageResult
+2026-02-06 23:48:35.885 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][8cc93180] Collected result for 'MutationContextStage': type=ProgramStageResult
+2026-02-06 23:48:35.902 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][8cc93180] Stage 'MutationContextStage' FINALIZED as COMPLETED.
+2026-02-06 23:48:35.902 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][8cc93180] Running=[] Launched=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors', 'LineagesToDescendants', 'MutationContextStage'] Finished=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors', 'LineagesToDescendants', 'MutationContextStage']
+2026-02-06 23:48:35.902 | INFO     | gigaevo.programs.dag.dag:_run_internal:213 | [DAG][8cc93180] Idle & no pending work — terminating.
+2026-02-06 23:48:35.902 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][42f4e2c4] Stage 'LineagesToDescendants' FINALIZED as COMPLETED.
+2026-02-06 23:48:35.903 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][42f4e2c4] Running=[] Launched=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors', 'LineagesToDescendants'] Finished=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors', 'LineagesToDescendants']
+2026-02-06 23:48:35.903 | DEBUG    | gigaevo.database.state_manager:set_program_state:66 | [ProgramStateManager] Setting program 8cc93180 state from ProgramState.DAG_PROCESSING_STARTED to ProgramState.DAG_PROCESSING_COMPLETED
+2026-02-06 23:48:35.903 | DEBUG    | gigaevo.database.state_manager:set_program_state:87 | [ProgramStateManager] Updated program 8cc93180 state to ProgramState.DAG_PROCESSING_COMPLETED
+2026-02-06 23:48:35.919 | DEBUG    | gigaevo.runner.dag_runner:_maintain:268 | [DagScheduler] harvested completed task for program 6f19fb84-3f39-4e55-94ff-ebba6aabb13b
+2026-02-06 23:48:35.920 | DEBUG    | gigaevo.runner.dag_runner:_maintain:268 | [DagScheduler] harvested completed task for program e889993e-d080-4683-8eb4-d91fdb27b6bb
+2026-02-06 23:48:35.920 | DEBUG    | gigaevo.runner.dag_runner:_maintain:268 | [DagScheduler] harvested completed task for program c681e456-6b8f-429e-abcd-1a7a444477ec
+2026-02-06 23:48:36.042 | DEBUG    | gigaevo.runner.dag_runner:_maintain:280 | [DagScheduler] Cleaned up 3 finished + 0 timed out tasks, forced GC
+2026-02-06 23:48:36.043 | DEBUG    | gigaevo.database.state_manager:set_program_state:94 | [ProgramStateManager] Atomically transitioned 8cc93180 state ProgramState.DAG_PROCESSING_STARTED -> ProgramState.DAG_PROCESSING_COMPLETED
+2026-02-06 23:48:36.043 | DEBUG    | gigaevo.runner.dag_runner:_execute_dag:397 | [DagScheduler] DAG completed for 8cc93180-b0ac-4626-84bb-ee00ab5796a5 (state updated)
+2026-02-06 23:48:36.044 | INFO     | gigaevo.programs.dag.dag:_launch_ready:283 | [DAG][42f4e2c4] Stage 'MutationContextStage' STARTED.
+2026-02-06 23:48:36.044 | DEBUG    | gigaevo.programs.dag.dag:_launch_ready:294 | [DAG][42f4e2c4] Launched stages: ['MutationContextStage']
+2026-02-06 23:48:36.044 | INFO     | gigaevo.programs.stages.base:execute:152 | [MutationContextStage] Executing for 42f4e2c4
+2026-02-06 23:48:36.044 | DEBUG    | gigaevo.evolution.mutation.context:format:74 | [FamilyTreeMutationContext] Formatting with 2 ancestors and 1 descendants
+2026-02-06 23:48:36.045 | DEBUG    | gigaevo.programs.stages.base:execute:193 | [MutationContextStage] ok in 0.00s
+2026-02-06 23:48:36.045 | DEBUG    | gigaevo.programs.dag.dag:_process_finished_task:315 | [DAG][42f4e2c4] Collected result for 'MutationContextStage': type=ProgramStageResult
+2026-02-06 23:48:36.057 | INFO     | gigaevo.programs.dag.dag:_process_finished_task:363 | [DAG][42f4e2c4] Stage 'MutationContextStage' FINALIZED as COMPLETED.
+2026-02-06 23:48:36.057 | DEBUG    | gigaevo.programs.dag.dag:_run_internal:121 | [DAG][42f4e2c4] Running=[] Launched=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors', 'LineagesToDescendants', 'MutationContextStage'] Finished=['AncestorProgramIds', 'DescendantProgramIds', 'LineagesFromAncestors', 'LineagesToDescendants', 'MutationContextStage']
+2026-02-06 23:48:36.057 | INFO     | gigaevo.programs.dag.dag:_run_internal:213 | [DAG][42f4e2c4] Idle & no pending work — terminating.
+2026-02-06 23:48:36.057 | DEBUG    | gigaevo.database.state_manager:set_program_state:66 | [ProgramStateManager] Setting program 42f4e2c4 state from ProgramState.DAG_PROCESSING_STARTED to ProgramState.DAG_PROCESSING_COMPLETED
+2026-02-06 23:48:36.058 | DEBUG    | gigaevo.database.state_manager:set_program_state:87 | [ProgramStateManager] Updated program 42f4e2c4 state to ProgramState.DAG_PROCESSING_COMPLETED
+2026-02-06 23:48:36.067 | DEBUG    | gigaevo.runner.dag_runner:_maintain:268 | [DagScheduler] harvested completed task for program 8cc93180-b0ac-4626-84bb-ee00ab5796a5
+2026-02-06 23:48:36.188 | DEBUG    | gigaevo.runner.dag_runner:_maintain:280 | [DagScheduler] Cleaned up 1 finished + 0 timed out tasks, forced GC
+2026-02-06 23:48:36.188 | DEBUG    | gigaevo.database.state_manager:set_program_state:94 | [ProgramStateManager] Atomically transitioned 42f4e2c4 state ProgramState.DAG_PROCESSING_STARTED -> ProgramState.DAG_PROCESSING_COMPLETED
+2026-02-06 23:48:36.188 | DEBUG    | gigaevo.runner.dag_runner:_execute_dag:397 | [DagScheduler] DAG completed for 42f4e2c4-10c4-4eea-bedc-be73abeeedb0 (state updated)
+2026-02-06 23:48:36.311 | DEBUG    | gigaevo.evolution.engine.core:step:196 | [EvolutionEngine] Phase 6: Refresh DAGs finished (idle)
+2026-02-06 23:48:37.314 | DEBUG    | gigaevo.evolution.engine.core:step:174 | [EvolutionEngine] Phase 1: Idle confirmed
+2026-02-06 23:48:37.314 | DEBUG    | gigaevo.evolution.strategies.multi_island:select_elites:123 | MultiIsland: selecting elites (gen=2, total=5, islands=1)
+2026-02-06 23:48:37.314 | DEBUG    | gigaevo.evolution.strategies.multi_island:select_elites:133 | MultiIsland: migration check (gens_since_last=2, interval=25)
+2026-02-06 23:48:37.315 | DEBUG    | gigaevo.evolution.strategies.multi_island:select_elites:151 | MultiIsland: island quotas: {'fitness_island': 5}
+2026-02-06 23:48:37.322 | DEBUG    | gigaevo.evolution.strategies.island:select_elites:154 | Island fitness_island: selecting elites (requested=5, archive_size=6)
+2026-02-06 23:48:37.322 | DEBUG    | gigaevo.evolution.strategies.elite_selectors:__call__:52 | FitnessProportionalEliteSelector: selecting 5 from 6 programs (key='fitness', higher_is_better=True)
+2026-02-06 23:48:37.322 | DEBUG    | gigaevo.evolution.strategies.elite_selectors:__call__:79 | FitnessProportionalEliteSelector: fitness range [0.000, 0.760]
+2026-02-06 23:48:37.322 | ERROR    | gigaevo.evolution.engine.core:run:159 | [EvolutionEngine] step() failed: Total of weights must be greater than zero
+Traceback (most recent call last):
+
+  File "/media/ssd-3t/isviridov/alphaevolve/gigaevo-core/run.py", line 141, in <module>
+    main()
+    └ <function main at 0x7cf1c19c04a0>
+
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/site-packages/hydra/main.py", line 94, in decorated_main
+    _run_hydra(
+    └ <function _run_hydra at 0x7cf32a5a4220>
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/site-packages/hydra/_internal/utils.py", line 394, in _run_hydra
+    _run_app(
+    └ <function _run_app at 0x7cf32a5a42c0>
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/site-packages/hydra/_internal/utils.py", line 457, in _run_app
+    run_and_report(
+    └ <function run_and_report at 0x7cf32a5a4180>
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/site-packages/hydra/_internal/utils.py", line 220, in run_and_report
+    return func()
+           └ <function _run_app.<locals>.<lambda> at 0x7cf1c19c3f60>
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/site-packages/hydra/_internal/utils.py", line 458, in <lambda>
+    lambda: hydra.run(
+            │     └ <function Hydra.run at 0x7cf32a452b60>
+            └ <hydra._internal.hydra.Hydra object at 0x7cf1c1eeff50>
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/site-packages/hydra/_internal/hydra.py", line 119, in run
+    ret = run_job(
+          └ <function run_job at 0x7cf32a74b1a0>
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/site-packages/hydra/core/utils.py", line 186, in run_job
+    ret.return_value = task_function(task_cfg)
+    │   │              │             └ {'stage_timeout': 480, 'dag_timeout': 720, 'dag_concurrency': 4, 'max_code_length': 30000, 'max_insights': 8, 'redis_max_conn...
+    │   │              └ <function main at 0x7cf1c19c0400>
+    │   └ <property object at 0x7cf32a707ba0>
+    └ JobReturn(overrides=['problem.name=gigaevo_mediq_task', 'redis.port=44004', 'llm_base_url=https://inference.airi.net:46783/v1...
+
+  File "/media/ssd-3t/isviridov/alphaevolve/gigaevo-core/run.py", line 136, in main
+    asyncio.run(run_experiment(cfg))
+    │       │   │              └ {'stage_timeout': 480, 'dag_timeout': 720, 'dag_concurrency': 4, 'max_code_length': 30000, 'max_insights': 8, 'redis_max_conn...
+    │       │   └ <function run_experiment at 0x7cf32c1244a0>
+    │       └ <function run at 0x7cf32ae08d60>
+    └ <module 'asyncio' from '/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/asyncio/__init__.py'>
+
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           │      │   └ <coroutine object run_experiment at 0x7cf1c18dd940>
+           │      └ <function Runner.run at 0x7cf32ae98e00>
+           └ <asyncio.runners.Runner object at 0x7cf1c1eefe10>
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           │    │     │                  └ <Task pending name='Task-1' coro=<run_experiment() running at /media/ssd-3t/isviridov/alphaevolve/gigaevo-core/run.py:96> wai...
+           │    │     └ <function BaseEventLoop.run_until_complete at 0x7cf32ae96980>
+           │    └ <_UnixSelectorEventLoop running=True closed=False debug=False>
+           └ <asyncio.runners.Runner object at 0x7cf1c1eefe10>
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/asyncio/base_events.py", line 641, in run_until_complete
+    self.run_forever()
+    │    └ <function BaseEventLoop.run_forever at 0x7cf32ae968e0>
+    └ <_UnixSelectorEventLoop running=True closed=False debug=False>
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/asyncio/base_events.py", line 608, in run_forever
+    self._run_once()
+    │    └ <function BaseEventLoop._run_once at 0x7cf32ae98720>
+    └ <_UnixSelectorEventLoop running=True closed=False debug=False>
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/asyncio/base_events.py", line 1936, in _run_once
+    handle._run()
+    │      └ <function Handle._run at 0x7cf32afe60c0>
+    └ <Handle Task.task_wakeup(<Future finished result=None>)>
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/asyncio/events.py", line 84, in _run
+    self._context.run(self._callback, *self._args)
+    │    │            │    │           │    └ <member '_args' of 'Handle' objects>
+    │    │            │    │           └ <Handle Task.task_wakeup(<Future finished result=None>)>
+    │    │            │    └ <member '_callback' of 'Handle' objects>
+    │    │            └ <Handle Task.task_wakeup(<Future finished result=None>)>
+    │    └ <member '_context' of 'Handle' objects>
+    └ <Handle Task.task_wakeup(<Future finished result=None>)>
+
+> File "/media/ssd-3t/isviridov/alphaevolve/gigaevo-core/gigaevo/evolution/engine/core.py", line 146, in run
+    await asyncio.wait_for(self.step(), timeout=timeout)
+          │       │        │    │               └ 4800.0
+          │       │        │    └ <function EvolutionEngine.step at 0x7cf1c19877e0>
+          │       │        └ <gigaevo.evolution.engine.core.EvolutionEngine object at 0x7cf1bbfd42d0>
+          │       └ <function wait_for at 0x7cf32ae7d620>
+          └ <module 'asyncio' from '/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/asyncio/__init__.py'>
+
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/asyncio/tasks.py", line 489, in wait_for
+    return fut.result()
+           │   └ <method 'result' of '_asyncio.Task' objects>
+           └ <Task finished name='Task-26599' coro=<EvolutionEngine.step() done, defined at /media/ssd-3t/isviridov/alphaevolve/gigaevo-co...
+
+  File "/media/ssd-3t/isviridov/alphaevolve/gigaevo-core/gigaevo/evolution/engine/core.py", line 177, in step
+    elites = await self._select_elites_for_mutation()
+                   │    └ <function EvolutionEngine._select_elites_for_mutation at 0x7cf1c1987920>
+                   └ <gigaevo.evolution.engine.core.EvolutionEngine object at 0x7cf1bbfd42d0>
+
+  File "/media/ssd-3t/isviridov/alphaevolve/gigaevo-core/gigaevo/evolution/engine/core.py", line 206, in _select_elites_for_mutation
+    elites = await self.strategy.select_elites(
+                   │    │        └ <function MapElitesMultiIsland.select_elites at 0x7cf1c1984860>
+                   │    └ <gigaevo.evolution.strategies.multi_island.MapElitesMultiIsland object at 0x7cf1bbfd6550>
+                   └ <gigaevo.evolution.engine.core.EvolutionEngine object at 0x7cf1bbfd42d0>
+
+  File "/media/ssd-3t/isviridov/alphaevolve/gigaevo-core/gigaevo/evolution/strategies/multi_island.py", line 165, in select_elites
+    selections = await asyncio.gather(*tasks)
+                       │       │       └ [<Task finished name='Task-26602' coro=<MapElitesIsland.select_elites() done, defined at /media/ssd-3t/isviridov/alphaevolve/...
+                       │       └ <function gather at 0x7cf32ae7dbc0>
+                       └ <module 'asyncio' from '/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/asyncio/__init__.py'>
+
+  File "/media/ssd-3t/isviridov/alphaevolve/gigaevo-core/gigaevo/evolution/strategies/island.py", line 176, in select_elites
+    selected = self.config.elite_selector(elites, total)
+               │    │      │              │       └ 5
+               │    │      │              └ [Program(id='42f4e2c4-10c4-4eea-bedc-be73abeeedb0', code='from helper import (\n    log_info_expert,\n    log_info,\n    get_...
+               │    │      └ <gigaevo.evolution.strategies.elite_selectors.FitnessProportionalEliteSelector object at 0x7cf1bbfd6ed0>
+               │    └ IslandConfig(island_id='fitness_island', max_size=75, behavior_space=BehaviorSpace(feature_bounds={'fitness': (0.01, 1.0), 'i...
+               └ <gigaevo.evolution.strategies.island.MapElitesIsland object at 0x7cf1bbfd6350>
+
+  File "/media/ssd-3t/isviridov/alphaevolve/gigaevo-core/gigaevo/evolution/strategies/elite_selectors.py", line 103, in __call__
+    chosen = random.choices(
+             │      └ <bound method Random.choices of <random.Random object at 0x1bc46960>>
+             └ <module 'random' from '/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/random.py'>
+
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/random.py", line 509, in choices
+    raise ValueError('Total of weights must be greater than zero')
+
+ValueError: Total of weights must be greater than zero
+2026-02-06 23:48:38.343 | DEBUG    | gigaevo.evolution.engine.core:step:174 | [EvolutionEngine] Phase 1: Idle confirmed
+2026-02-06 23:48:38.343 | DEBUG    | gigaevo.evolution.strategies.multi_island:select_elites:123 | MultiIsland: selecting elites (gen=2, total=5, islands=1)
+2026-02-06 23:48:38.343 | DEBUG    | gigaevo.evolution.strategies.multi_island:select_elites:133 | MultiIsland: migration check (gens_since_last=2, interval=25)
+2026-02-06 23:48:38.343 | DEBUG    | gigaevo.evolution.strategies.multi_island:select_elites:151 | MultiIsland: island quotas: {'fitness_island': 5}
+2026-02-06 23:48:38.348 | DEBUG    | gigaevo.evolution.strategies.island:select_elites:154 | Island fitness_island: selecting elites (requested=5, archive_size=6)
+2026-02-06 23:48:38.348 | DEBUG    | gigaevo.evolution.strategies.elite_selectors:__call__:52 | FitnessProportionalEliteSelector: selecting 5 from 6 programs (key='fitness', higher_is_better=True)
+2026-02-06 23:48:38.348 | DEBUG    | gigaevo.evolution.strategies.elite_selectors:__call__:79 | FitnessProportionalEliteSelector: fitness range [0.000, 0.760]
+2026-02-06 23:48:38.348 | ERROR    | gigaevo.evolution.engine.core:run:159 | [EvolutionEngine] step() failed: Total of weights must be greater than zero
+Traceback (most recent call last):
+
+  File "/media/ssd-3t/isviridov/alphaevolve/gigaevo-core/run.py", line 141, in <module>
+    main()
+    └ <function main at 0x7cf1c19c04a0>
+
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/site-packages/hydra/main.py", line 94, in decorated_main
+    _run_hydra(
+    └ <function _run_hydra at 0x7cf32a5a4220>
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/site-packages/hydra/_internal/utils.py", line 394, in _run_hydra
+    _run_app(
+    └ <function _run_app at 0x7cf32a5a42c0>
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/site-packages/hydra/_internal/utils.py", line 457, in _run_app
+    run_and_report(
+    └ <function run_and_report at 0x7cf32a5a4180>
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/site-packages/hydra/_internal/utils.py", line 220, in run_and_report
+    return func()
+           └ <function _run_app.<locals>.<lambda> at 0x7cf1c19c3f60>
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/site-packages/hydra/_internal/utils.py", line 458, in <lambda>
+    lambda: hydra.run(
+            │     └ <function Hydra.run at 0x7cf32a452b60>
+            └ <hydra._internal.hydra.Hydra object at 0x7cf1c1eeff50>
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/site-packages/hydra/_internal/hydra.py", line 119, in run
+    ret = run_job(
+          └ <function run_job at 0x7cf32a74b1a0>
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/site-packages/hydra/core/utils.py", line 186, in run_job
+    ret.return_value = task_function(task_cfg)
+    │   │              │             └ {'stage_timeout': 480, 'dag_timeout': 720, 'dag_concurrency': 4, 'max_code_length': 30000, 'max_insights': 8, 'redis_max_conn...
+    │   │              └ <function main at 0x7cf1c19c0400>
+    │   └ <property object at 0x7cf32a707ba0>
+    └ JobReturn(overrides=['problem.name=gigaevo_mediq_task', 'redis.port=44004', 'llm_base_url=https://inference.airi.net:46783/v1...
+
+  File "/media/ssd-3t/isviridov/alphaevolve/gigaevo-core/run.py", line 136, in main
+    asyncio.run(run_experiment(cfg))
+    │       │   │              └ {'stage_timeout': 480, 'dag_timeout': 720, 'dag_concurrency': 4, 'max_code_length': 30000, 'max_insights': 8, 'redis_max_conn...
+    │       │   └ <function run_experiment at 0x7cf32c1244a0>
+    │       └ <function run at 0x7cf32ae08d60>
+    └ <module 'asyncio' from '/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/asyncio/__init__.py'>
+
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/asyncio/runners.py", line 190, in run
+    return runner.run(main)
+           │      │   └ <coroutine object run_experiment at 0x7cf1c18dd940>
+           │      └ <function Runner.run at 0x7cf32ae98e00>
+           └ <asyncio.runners.Runner object at 0x7cf1c1eefe10>
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           │    │     │                  └ <Task pending name='Task-1' coro=<run_experiment() running at /media/ssd-3t/isviridov/alphaevolve/gigaevo-core/run.py:96> wai...
+           │    │     └ <function BaseEventLoop.run_until_complete at 0x7cf32ae96980>
+           │    └ <_UnixSelectorEventLoop running=True closed=False debug=False>
+           └ <asyncio.runners.Runner object at 0x7cf1c1eefe10>
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/asyncio/base_events.py", line 641, in run_until_complete
+    self.run_forever()
+    │    └ <function BaseEventLoop.run_forever at 0x7cf32ae968e0>
+    └ <_UnixSelectorEventLoop running=True closed=False debug=False>
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/asyncio/base_events.py", line 608, in run_forever
+    self._run_once()
+    │    └ <function BaseEventLoop._run_once at 0x7cf32ae98720>
+    └ <_UnixSelectorEventLoop running=True closed=False debug=False>
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/asyncio/base_events.py", line 1936, in _run_once
+    handle._run()
+    │      └ <function Handle._run at 0x7cf32afe60c0>
+    └ <Handle Task.task_wakeup(<Future finished result=None>)>
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/asyncio/events.py", line 84, in _run
+    self._context.run(self._callback, *self._args)
+    │    │            │    │           │    └ <member '_args' of 'Handle' objects>
+    │    │            │    │           └ <Handle Task.task_wakeup(<Future finished result=None>)>
+    │    │            │    └ <member '_callback' of 'Handle' objects>
+    │    │            └ <Handle Task.task_wakeup(<Future finished result=None>)>
+    │    └ <member '_context' of 'Handle' objects>
+    └ <Handle Task.task_wakeup(<Future finished result=None>)>
+
+> File "/media/ssd-3t/isviridov/alphaevolve/gigaevo-core/gigaevo/evolution/engine/core.py", line 146, in run
+    await asyncio.wait_for(self.step(), timeout=timeout)
+          │       │        │    │               └ 4800.0
+          │       │        │    └ <function EvolutionEngine.step at 0x7cf1c19877e0>
+          │       │        └ <gigaevo.evolution.engine.core.EvolutionEngine object at 0x7cf1bbfd42d0>
+          │       └ <function wait_for at 0x7cf32ae7d620>
+          └ <module 'asyncio' from '/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/asyncio/__init__.py'>
+
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/asyncio/tasks.py", line 489, in wait_for
+    return fut.result()
+           │   └ <method 'result' of '_asyncio.Task' objects>
+           └ <Task finished name='Task-26616' coro=<EvolutionEngine.step() done, defined at /media/ssd-3t/isviridov/alphaevolve/gigaevo-co...
+
+  File "/media/ssd-3t/isviridov/alphaevolve/gigaevo-core/gigaevo/evolution/engine/core.py", line 177, in step
+    elites = await self._select_elites_for_mutation()
+                   │    └ <function EvolutionEngine._select_elites_for_mutation at 0x7cf1c1987920>
+                   └ <gigaevo.evolution.engine.core.EvolutionEngine object at 0x7cf1bbfd42d0>
+
+  File "/media/ssd-3t/isviridov/alphaevolve/gigaevo-core/gigaevo/evolution/engine/core.py", line 206, in _select_elites_for_mutation
+    elites = await self.strategy.select_elites(
+                   │    │        └ <function MapElitesMultiIsland.select_elites at 0x7cf1c1984860>
+                   │    └ <gigaevo.evolution.strategies.multi_island.MapElitesMultiIsland object at 0x7cf1bbfd6550>
+                   └ <gigaevo.evolution.engine.core.EvolutionEngine object at 0x7cf1bbfd42d0>
+
+  File "/media/ssd-3t/isviridov/alphaevolve/gigaevo-core/gigaevo/evolution/strategies/multi_island.py", line 165, in select_elites
+    selections = await asyncio.gather(*tasks)
+                       │       │       └ [<Task finished name='Task-26619' coro=<MapElitesIsland.select_elites() done, defined at /media/ssd-3t/isviridov/alphaevolve/...
+                       │       └ <function gather at 0x7cf32ae7dbc0>
+                       └ <module 'asyncio' from '/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/asyncio/__init__.py'>
+
+  File "/media/ssd-3t/isviridov/alphaevolve/gigaevo-core/gigaevo/evolution/strategies/island.py", line 176, in select_elites
+    selected = self.config.elite_selector(elites, total)
+               │    │      │              │       └ 5
+               │    │      │              └ [Program(id='42f4e2c4-10c4-4eea-bedc-be73abeeedb0', code='from helper import (\n    log_info_expert,\n    log_info,\n    get_...
+               │    │      └ <gigaevo.evolution.strategies.elite_selectors.FitnessProportionalEliteSelector object at 0x7cf1bbfd6ed0>
+               │    └ IslandConfig(island_id='fitness_island', max_size=75, behavior_space=BehaviorSpace(feature_bounds={'fitness': (0.01, 1.0), 'i...
+               └ <gigaevo.evolution.strategies.island.MapElitesIsland object at 0x7cf1bbfd6350>
+
+  File "/media/ssd-3t/isviridov/alphaevolve/gigaevo-core/gigaevo/evolution/strategies/elite_selectors.py", line 103, in __call__
+    chosen = random.choices(
+             │      └ <bound method Random.choices of <random.Random object at 0x1bc46960>>
+             └ <module 'random' from '/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/random.py'>
+
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/random.py", line 509, in choices
+    raise ValueError('Total of weights must be greater than zero')
+
+ValueError: Total of weights must be greater than zero
+2026-02-06 23:48:39.369 | DEBUG    | gigaevo.evolution.engine.core:step:174 | [EvolutionEngine] Phase 1: Idle confirmed
+2026-02-06 23:48:39.369 | DEBUG    | gigaevo.evolution.strategies.multi_island:select_elites:123 | MultiIsland: selecting elites (gen=2, total=5, islands=1)
+2026-02-06 23:48:39.369 | DEBUG    | gigaevo.evolution.strategies.multi_island:select_elites:133 | MultiIsland: migration check (gens_since_last=2, interval=25)
+2026-02-06 23:48:39.369 | DEBUG    | gigaevo.evolution.strategies.multi_island:select_elites:151 | MultiIsland: island quotas: {'fitness_island': 5}
+2026-02-06 23:48:39.375 | DEBUG    | gigaevo.evolution.strategies.island:select_elites:154 | Island fitness_island: selecting elites (requested=5, archive_size=6)
+2026-02-06 23:48:39.375 | DEBUG    | gigaevo.evolution.strategies.elite_selectors:__call__:52 | FitnessProportionalEliteSelector: selecting 5 from 6 programs (key='fitness', higher_is_better=True)
+2026-02-06 23:48:39.375 | DEBUG    | gigaevo.evolution.strategies.elite_selectors:__call__:79 | FitnessProportionalEliteSelector: fitness range [0.000, 0.760]
+2026-02-06 23:48:39.376 | ERROR    | gigaevo.evolution.engine.core:run:159 | [EvolutionEngine] step() failed: Total of weights must be greater than zero
+Traceback (most recent call last):
+
+  File "/media/ssd-3t/isviridov/alphaevolve/gigaevo-core/run.py", line 141, in <module>
+    main()
+    └ <function main at 0x7cf1c19c04a0>
+
+  File "/media/ssd-3t/isviridov/miniconda3/envs/gigaevo/lib/python3.11/site-p
