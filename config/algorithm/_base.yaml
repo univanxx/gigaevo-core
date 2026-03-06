@@ -36,6 +36,12 @@ validity_bounds:
   metrics_context: ${metrics_context}
   key: ${validity_key}
 
+# Bounds for auxiliary behavior metrics (here: average doctor token usage)
+tokens_count_bounds:
+  _target_: gigaevo.config.helpers.get_bounds
+  metrics_context: ${metrics_context}
+  key: tokens_count
+
 # Mutation operator (shared by all configs)
 mutation_operator:
   _target_: gigaevo.evolution.mutation.mutation_operator.LLMMutationOperator

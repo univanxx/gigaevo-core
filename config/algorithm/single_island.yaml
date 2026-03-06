@@ -5,17 +5,24 @@ defaults:
 
 # Single-island MAP-Elites configuration
 
-# Build behavior space from lists
+# Build behavior space from lists.
+# For MedIQ we use 2D behavior:
+#   - primary metric (fitness)
+#   - average doctor token usage (tokens_count), to encourage shorter consultations
 behavior_space:
   _target_: gigaevo.config.helpers.build_behavior_space
   keys:
-    - ${primary_key}
+    - ${primary_key}       # fitness
+    - tokens_count         # secondary behavior dimension
   bounds:
-    - ${primary_bounds}
+    - ${primary_bounds}        # [0.01, 1.0] for fitness
+    - ${tokens_count_bounds}
   resolutions:
-    - ${primary_resolution}
+    - 100
+    - 150
   binning_types:
     - ${binning_type}
+    - linear
   dynamic: true
   expansion_buffer_ratio: 0.1
 
