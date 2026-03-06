@@ -10,7 +10,7 @@ set -e
 # Общие переменные окружения
 export TORCHINDUCTOR_CACHE_DIR=/media/ssd-3t/isviridov/vllm_compile_cache
 export HF_HOME=/media/ssd-3t/isviridov/models_cache
-export HF_TOKEN=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
+export HF_TOKEN=""
 export CUDA_VISIBLE_DEVICES=1
 
 

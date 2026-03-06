@@ -14,7 +14,7 @@ REDIS_PORT=44008
 # Evolution LLM (API)
 EVOLUTION_LLM_URL="https://inference.airi.net:46783/v1"
 EVOLUTION_MODEL_NAME="Openai/Gpt-oss-120b"
-OPENAI_API_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3ZDg5YWY5LTUzN2UtNGFhMC1hMGRkLTZiMzI4NjUwZGViNCIsImxvZ2dpbmdfaW5fdG9rZW4iOmZhbHNlLCJpYXQiOjE3NzI0NTc4MDgsImV4cCI6MTc3MzA2MjYwOH0.Pw95tNJ8dgDFifY6htUbnbIdaB-2V93IS3QhAoycJVs"
+OPENAI_API_KEY=""
 
 # MedIQ LLM (API, пациент/врач)
 MEDIQ_VLLM_URL="https://inference.airi.net:46783/v1"  # "https://inference.airi.net:46783/v1" -- AIRI, "http://localhost:44005/v1" -- local
