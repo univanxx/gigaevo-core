@@ -11,10 +11,10 @@ import random
 sys.path.append("/media/ssd-3t/isviridov/alphaevolve/mediQ/src")
 
 # Default data path
-DEFAULT_DATA_PATH = "/media/ssd-3t/isviridov/alphaevolve/mediQ/data/all_craft_md.jsonl"
+DEFAULT_DATA_PATH = "/media/ssd-3t/isviridov/alphaevolve/mediQ/data/all_train_convo.jsonl"
 
-# Models specification
-MEDIQ_EXPERT_MODEL = "meta-llama/Llama-3.1-8B-Instruct"
+# Models specification (must match vLLM --served-model-name). Set by run.sh via MEDIQ_MODEL_NAME.
+MEDIQ_EXPERT_MODEL = os.environ.get("MEDIQ_MODEL_NAME")
 MEDIQ_EXPERT_MODEL_QG = MEDIQ_EXPERT_MODEL
 MEDIQ_PATIENT_MODEL = MEDIQ_EXPERT_MODEL
 # URL for MedIQ LLM (patient/doctor). Set by run.sh; default for local vLLM on 44003.
@@ -25,7 +25,6 @@ MAX_CASES = 50
 
 
 def log_info(message, logger_name="detail_logger", print_to_std=False, type="info"):
-    # if type(logger) == str and logger in logging.getLogger().manager.loggerDict:
     logger = logging.getLogger(logger_name)
     if type == "error": return logger.error(message)
     if logger: logger.info(message)
@@ -56,16 +55,16 @@ class ModelCacheHTTP:
         from openai import OpenAI
         self.client = OpenAI(
             base_url=self.base_url,
-            api_key="dummy-key",  # vLLM doesn't validate API key
+            api_key=os.environ.get("OPENAI_API_KEY"),
         )
         log_info(f"[ModelCacheHTTP] Initialized client for {self.model_name} at {self.base_url}")
     
     def generate(self, messages):
         log_info(f"[{self.model_name}][INPUT]: {messages}")
         
-        temperature = self.args.get("temperature", 0.6)
-        max_tokens = self.args.get("max_tokens", 128)
-        top_p = self.args.get("top_p", 0.9)
+        temperature = self.args.get("temperature")
+        max_tokens = self.args.get("max_tokens")
+        top_p = self.args.get("top_p")
         frequency_penalty = self.args.get("frequency_penalty", 0)
         presence_penalty = self.args.get("presense_penalty", 0)
         
@@ -80,19 +79,16 @@ class ModelCacheHTTP:
                 presence_penalty=presence_penalty,
             )
             response_text = response.choices[0].message.content
-            usage = {
-                "input_tokens": response.usage.prompt_tokens,
-                "output_tokens": response.usage.completion_tokens,
-            }
         except Exception as e:
             log_info(f"[{self.model_name}][ERROR]: {e}", type="error")
             raise
         
         # Trimmed response for logging to avoid huge lines
-        log_info(f"[{self.model_name}][OUTPUT]: " +
-                 f"{{'response_text': '{response_text[:100]}...', 'usage': {usage}}}")
-        # Return only text and usage; log-probs are not used in this task.
-        return response_text, usage
+        log_info(
+            f"[{self.model_name}][OUTPUT]: "
+            f"{{'response_text': '{response_text[:100]}...'}}"
+        )
+        return response_text
 
 
 def get_response(messages, model_name, **kwargs):
@@ -144,6 +140,7 @@ def load_data(filename):
 
 class Patient:
     def __init__(self, args, sample):
+        self.args = args
         # Assuming 'context' is a list or a long string of historical or background information
         if isinstance(sample['context'], list) and len(sample['context']) > 0:
             if 'initial_info' in sample: self.initial_info = sample['initial_info']
@@ -165,9 +162,13 @@ class Patient:
         
         self.model_name = MEDIQ_PATIENT_MODEL
         self.history = []  # To track the interaction history of questions and answers
-        self.facts = sample.get('facts') or sample.get('atomic_facts')  # To store atomic facts after initial processing, you can choose to store this somewhere locally to avoid repeated processing
+        # To store atomic facts after initial processing, you can choose to
+        # store this somewhere locally to avoid repeated processing
+        self.facts = sample.get('facts') or sample.get('atomic_facts')
 
-        self.max_length = 50  # Maximum length of the response (different from the expert system)
+        # Use the same token budget as the expert unless explicitly overridden
+        # in respond() (e.g., for long fact extraction).
+        self.max_length = args.max_tokens
 
     def update_state(self, question, answer):
         # Update the internal history with the new question and the corresponding answer
@@ -189,8 +190,27 @@ class Patient:
         return [qa["answer"] for qa in self.history]
     
     def get_response(self, messages, max_length=None):
-        if max_length is None: max_length = self.max_length
-        return get_response(messages, self.model_name, max_length=max_length)
+        """
+        Call the MedIQ LLM for the patient.
+
+        max_length controls the completion token budget for this call.
+        If not provided, falls back to self.max_length, which is tied to
+        args.max_tokens.
+        """
+        if max_length is None:
+            max_length = self.max_length
+
+        # Important: ModelCacheHTTP expects `max_tokens`, not `max_length`.
+        # We also forward temperature / top_p / top_logprobs so that patient
+        # and expert use consistent generation settings.
+        return get_response(
+            messages,
+            self.model_name,
+            max_tokens=max_length,
+            temperature=self.args.temperature,
+            top_p=self.args.top_p,
+            top_logprobs=self.args.top_logprobs,
+        )
     
     def respond(self, question):
         raise NotImplementedError
@@ -202,7 +222,7 @@ class FactSelectPatient(Patient):
             system_prompt = "You are a truthful medical assistant that understands the patient's information."
             user_prompt = f"Break the following patient information into a list of independent atomic facts, with one piece of information in each statement. Each fact should only include the smallest unit of information, but should be self-contained.\n\"{self.context_para}\"\nResponse with the list of atomic facts and nothing else. Write each fact on a new line starting with a dash (-). No numbered lists allowed."
             messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_prompt}]
-            response_text, num_tokens = self.get_response(messages, max_length=1000)
+            response_text = self.get_response(messages, max_length=self.max_length)
             response_text = [s.strip().lstrip('- ').strip() for s in response_text.splitlines() if s.strip()]
             self.facts = response_text
         
@@ -210,7 +230,7 @@ class FactSelectPatient(Patient):
         system_prompt = "You are a truthful medical assistant that understands the patient's information, and you are trying to answer questions from a medical doctor about the patient given a list of factual statements describing the patient. Please return the facts that answer the doctor's question verbatim without any additional information. Do not prefix the answer with numbers. If none of the facts answer the question, simply say \"The patient cannot answer this question, please do not ask this question again.\""
         prompt = f"List of facts:\n{facts_prompt}\n\nDoctor's question: \"{question}\"\n\nStatements that answer the question:"
         messages = [{"role": "system", "content": system_prompt}, {"role": "user", "content": prompt}]
-        response, num_tokens = self.get_response(messages)
+        response = self.get_response(messages)
         
         self.update_state(question, response)
         return response
@@ -219,7 +239,6 @@ class FactSelectPatient(Patient):
 def run_patient_interaction(expert_class, patient_class, args, sample):
     expert_system = expert_class(args, sample["question"], sample["options"])
     patient_system = patient_class(args, sample)  # Assuming the patient_system is initialized with the sample which includes necessary context
-    temp_choice_list = []
     temp_additional_info = []  # To store optional data like confidence scores
 
     while len(patient_system.get_questions()) < args.max_questions:
@@ -230,15 +249,12 @@ def run_patient_interaction(expert_class, patient_class, args, sample):
         temp_additional_info.append({k: v for k, v in response_dict.items() if k not in ["type", "letter_choice", "question"]})
 
         if response_dict["type"] == "question":
-            # still make the Expert generate a choice based on the current state for intermediate evaluation, log the question as an intermediate choice
-            temp_choice_list.append(response_dict["letter_choice"])
             # Patient generates an answer based on the last question asked, and add to memory
             patient_response = patient_system.respond(response_dict["question"])
             log_info(f"[Patient System]: {patient_response}")
 
         elif response_dict["type"] == "choice":
             expert_decision = response_dict["letter_choice"]
-            temp_choice_list.append(expert_decision)
             sample_info = {
                 "initial_info": patient_system.initial_info,
                 "correct_answer": sample["answer"],
@@ -248,7 +264,7 @@ def run_patient_interaction(expert_class, patient_class, args, sample):
                 "context": sample["context"],
                 "facts": patient_system.facts, # if the FactSelectPatient patient module is used, this will store the atomic facts the patient used to answer questions for reproducibility
             }
-            return expert_decision, patient_system.get_questions(), patient_system.get_answers(), temp_choice_list, temp_additional_info, sample_info
+            return expert_decision, patient_system.get_questions(), patient_system.get_answers(), temp_additional_info, sample_info
         
         else:
             raise ValueError("Invalid response type from expert_system.")
@@ -256,11 +272,8 @@ def run_patient_interaction(expert_class, patient_class, args, sample):
     # If max questions are reached and no final decision has been made
     log_info(f"==================== Max Interaction Length ({args.max_questions} turns) Reached --> Force Final Answer ====================")
     patient_state = patient_system.get_state()
-    response_dict = expert_system.respond(patient_state)
-    log_info(f"[Expert System]: {response_dict}")
-    stuck_response = response_dict["letter_choice"]
-    # Optional return values for analysis, e.g., confidence score, logprobs
-    temp_additional_info.append({k: v for k, v in response_dict.items() if k != "letter_choice"})
+    log_info("[Force final choice] requesting final letter from model (one call).")
+    stuck_response = expert_system.force_final_choice(patient_state)
 
     sample_info = {
         "initial_info": patient_system.initial_info,
@@ -269,11 +282,16 @@ def run_patient_interaction(expert_class, patient_class, args, sample):
         "question": sample["question"],
         "options": sample["options"],
         "context": sample["context"],
-        "facts": patient_system.facts, # if the FactSelectPatient patient module is used, this will store the atomic facts the patient used to answer questions for reproducibility
+        "facts": patient_system.facts,  # if the FactSelectPatient patient module is used, this will store the atomic facts the patient used to answer questions for reproducibility
     }
-    
-    return stuck_response, patient_system.get_questions(), patient_system.get_answers(), temp_choice_list + [stuck_response], temp_additional_info, sample_info
 
+    return (
+        stuck_response,
+        patient_system.get_questions(),
+        patient_system.get_answers(),
+        temp_additional_info,
+        sample_info,
+    )
 
 class Expert:
     """
@@ -288,7 +306,11 @@ class Expert:
     def respond(self, patient_state):
         # Decision-making based on the initial information, history of interactions, current inquiry, and options
         raise NotImplementedError
-    
+
+    def force_final_choice(self, patient_state):
+        """When max_questions reached and letter_choice is None, get a final letter in one extra call."""
+        raise NotImplementedError
+
     def ask_question(self, patient_state, prev_messages, task_prompt, question_generation_function):
         # Generate a question based on the current patient state
         kwargs = {
@@ -309,11 +331,10 @@ class Expert:
         kwargs = {
             "max_depth": self.args.max_questions,
             "patient_state": patient_state,
-            "rationale_generation": self.args.rationale_generation,
             "inquiry": self.inquiry,
             "options_dict": self.options,
             "abstain_threshold": self.args.abstain_threshold,
-            "self_consistency": self.args.self_consistency,
+            # "self_consistency": self.args.self_consistency,
             "model_name": MEDIQ_EXPERT_MODEL,
             "temperature": self.args.temperature,
             "max_tokens": self.args.max_tokens,
@@ -345,10 +366,10 @@ def expert_response_choice(messages, options_dict, **kwargs):
     """
     log_info(f"++++++++++++++++++++ Start of Multiple Chocie Decision [py:expert_response_choice()] ++++++++++++++++++++")
     log_info(f"[<CHOICE PROMPT>] [len(messages)={len(messages)}] (messages[-1]):\n{messages[-1]['content']}")
-    response_text, num_tokens = get_response(messages, **kwargs)
+    response_text = get_response(messages, **kwargs)
     if not response_text: 
         log_info("[<CHOICE LM RES>]: " + "No response.")
-        return "No response.", None, num_tokens
+        return "No response.", None
     log_info("[<CHOICE LM RES>]: " + response_text)
 
     letter_choice = parse_choice(response_text, options_dict)
@@ -357,7 +378,7 @@ def expert_response_choice(messages, options_dict, **kwargs):
     else:
         log_info("[<CHOICE PARSED>]: " + "FAILED TO PARSE.")
     
-    return response_text, letter_choice, num_tokens
+    return response_text, letter_choice
 
 
 def parse_confidence_score(response_text):
@@ -408,10 +429,10 @@ def expert_response_question(messages, **kwargs):
     """
     log_info(f"++++++++++++++++++++ Start of Question Generator [py:expert_response_question()] ++++++++++++++++++++")
     log_info(f"[<QUESTION GENERATOR PROMPT>] [len(messages)={len(messages)}] (messages[-1]):\n{messages[-1]['content']}")
-    response_text, num_tokens = get_response(messages, **kwargs)
+    response_text = get_response(messages, **kwargs)
     if not response_text: 
         log_info("[<QUESTION GENERATOR LM RES>]: " + "No response.")
-        return "No response.", None, num_tokens
+        return "No response.", None
     log_info("[<QUESTION GENERATOR LM RES>]: " + response_text)
 
     atomic_question = parse_atomic_question(response_text)
@@ -420,22 +441,21 @@ def expert_response_question(messages, **kwargs):
     else:
         log_info("[<QUESTION GENERATOR PARSED>]: " + "FAILED TO PARSE.")
     
-    return response_text, atomic_question, num_tokens
+    return response_text, atomic_question
 
 
 def question_generation(messages, task_prompt, **kwargs):
     messages.append({"role": "user", "content": task_prompt})
 
-    response_text, atomic_question, num_tokens = expert_response_question(messages, **kwargs)
+    response_text, atomic_question = expert_response_question(messages, **kwargs)
     log_info_expert(f"[ATOMIC QUESTION PROMPT]: {messages}")
     log_info_expert(f"[ATOMIC QUESTION RESPONSE]: {atomic_question}\n")
     messages.append({"role": "assistant", "content": atomic_question})
 
-    log_info_expert(f"[ATOMIC QUESTION RETURN]: {atomic_question}, usage: {num_tokens}\n")
+    log_info_expert(f"[ATOMIC QUESTION RETURN]: {atomic_question}\n")
     return {
         "atomic_question": atomic_question,
         "messages": messages,
-        "usage": num_tokens,
     }
 
 
@@ -446,14 +466,15 @@ class Args:
         self.max_questions = 10
         
         # Abstention settings
-        self.rationale_generation = False
-        self.self_consistency = 1
-        self.abstain_threshold = 0.8
+        # If abstain_threshold is None, each expert uses its own internal default
+        # (e.g. PROB_THRESHOLD in numerical_cutoff, SCALE_THRESHOLD in scale_abstain).
+        # self.self_consistency = 1
+        self.abstain_threshold = None
         
         # Model inference settings
         self.temperature = 0.6
         self.top_p = 0.9
-        self.max_tokens = 128
+        self.max_tokens = 256
         self.top_logprobs = 0
 
 
@@ -467,7 +488,7 @@ def run_mediq(expert_class) -> Tuple[List, List[str], List[int], List[str]]:
     
     # Limit cases if needed
     if max_cases and max_cases < len(patient_data):
-        patient_data = patient_data[:max_cases]
+        patient_data = random.sample(patient_data, k=max_cases)
     
     dialogues = []
     diagnoses = []
@@ -476,7 +497,7 @@ def run_mediq(expert_class) -> Tuple[List, List[str], List[int], List[str]]:
     
     for i, sample in enumerate(patient_data):
         # Run interaction exactly like mediQ_benchmark.py
-        letter_choice, questions, answers, temp_choice_list, temp_additional_info, sample_info = run_patient_interaction(
+        letter_choice, questions, answers, temp_additional_info, sample_info = run_patient_interaction(
             expert_class=expert_class,
             patient_class=FactSelectPatient,
             args=args,
