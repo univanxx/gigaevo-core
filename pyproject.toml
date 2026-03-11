@@ -11,7 +11,7 @@ authors = [
 ]
 readme = "README.md"
 license = {text = "MIT"}
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 
 dependencies = [
     "redis>=4.5.0",
@@ -45,7 +45,9 @@ dependencies = [
     "langfuse>=2.0.0",
     "scikit-learn",
     "optuna",
-    "cma"
+    "cma",
+    "vllm>=0.6.0",
+    "huggingface_hub>=0.20.0"
 ]
 
 [project.optional-dependencies]
