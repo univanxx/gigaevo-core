@@ -25,4 +25,12 @@ class EvolutionContext(BaseModel):
         default=None,
         description="Optional directory for prompt templates (e.g. from config.prompts.dir). Same layout as gigaevo/prompts.",
     )
+    stage_timeout: float | None = Field(
+        default=None,
+        description="Timeout in seconds for each DAG stage (e.g. entrypoint). If unset, pipeline default is used.",
+    )
+    dag_timeout: float | None = Field(
+        default=None,
+        description="Timeout in seconds for the whole DAG run. If unset, pipeline default is used.",
+    )
     model_config = ConfigDict(arbitrary_types_allowed=True)

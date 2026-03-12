@@ -59,8 +59,14 @@ class PipelineBuilder:
         self._nodes: dict[str, StageFactory] = {}
         self._data_flow_edges: list[DataFlowEdge] = []
         self._deps: dict[str, list[ExecutionOrderDependency]] = {}
-        self._dag_timeout: float = dag_timeout
+        ctx_dag = getattr(ctx, "dag_timeout", None)
+        self._dag_timeout: float = float(ctx_dag) if ctx_dag is not None else dag_timeout
         self._max_parallel: int = DEFAULT_DAG_CONCURRENCY
+
+    def _stage_timeout(self) -> float:
+        """Per-stage timeout from context or default."""
+        t = getattr(self.ctx, "stage_timeout", None)
+        return float(t) if t is not None else DEFAULT_SIMPLE_STAGE_TIMEOUT
 
     # Stage operations - add, replace, remove
     def add_stage(self, name: str, factory: StageFactory) -> "PipelineBuilder":
@@ -128,6 +134,8 @@ class PipelineBuilder:
 
     # Build the pipeline blueprint
     def build_blueprint(self) -> DAGBlueprint:
+        if getattr(self.ctx, "dag_timeout", None) is not None:
+            self._dag_timeout = float(self.ctx.dag_timeout)
         return DAGBlueprint(
             nodes=self._nodes,
             data_flow_edges=self._data_flow_edges,
@@ -160,7 +168,7 @@ class DefaultPipelineBuilder(PipelineBuilder):
             "ValidateCodeStage",
             lambda: ValidateCodeStage(
                 max_code_length=MAX_CODE_LENGTH,
-                timeout=DEFAULT_SIMPLE_STAGE_TIMEOUT,
+                timeout=self._stage_timeout(),
                 safe_mode=True,
             ),
         )
@@ -171,7 +179,7 @@ class DefaultPipelineBuilder(PipelineBuilder):
             lambda: CallProgramFunction(
                 function_name="entrypoint",
                 python_path=[problem_ctx.problem_dir.resolve()],
-                timeout=DEFAULT_SIMPLE_STAGE_TIMEOUT,
+                timeout=self._stage_timeout(),
                 max_memory_mb=MAX_MEMORY_MB,
                 max_output_size=MAX_OUTPUT_SIZE,
             ),
@@ -184,7 +192,7 @@ class DefaultPipelineBuilder(PipelineBuilder):
             lambda: CallValidatorFunction(
                 path=validator_path,
                 function_name="validate",
-                timeout=DEFAULT_SIMPLE_STAGE_TIMEOUT,
+                timeout=self._stage_timeout(),
                 max_memory_mb=MAX_MEMORY_MB,
                 max_output_size=MAX_OUTPUT_SIZE,
             ),
@@ -193,15 +201,15 @@ class DefaultPipelineBuilder(PipelineBuilder):
         # Extract metrics and artifact from validation result (artifact output unused for now)
         self.add_stage(
             "FetchMetrics",
-            lambda: FetchMetrics(timeout=DEFAULT_SIMPLE_STAGE_TIMEOUT),
+            lambda: FetchMetrics(timeout=self._stage_timeout()),
         )
         self.add_stage(
             "FetchArtifact",
-            lambda: FetchArtifact(timeout=DEFAULT_SIMPLE_STAGE_TIMEOUT),
+            lambda: FetchArtifact(timeout=self._stage_timeout()),
         )
         self.add_stage(
             "FormatterStage",
-            lambda: FormatterStage(timeout=DEFAULT_SIMPLE_STAGE_TIMEOUT),
+            lambda: FormatterStage(timeout=self._stage_timeout()),
         )
 
         # Insights stages
@@ -212,7 +220,7 @@ class DefaultPipelineBuilder(PipelineBuilder):
                 task_description=task_description,
                 metrics_context=metrics_context,
                 max_insights=DEFAULT_MAX_INSIGHTS,
-                timeout=DEFAULT_SIMPLE_STAGE_TIMEOUT,
+                timeout=self._stage_timeout(),
                 prompts_dir=prompts_dir,
             ),
         )
@@ -226,7 +234,7 @@ class DefaultPipelineBuilder(PipelineBuilder):
                     strategy="best_fitness",
                     max_selected=1,
                 ),
-                timeout=DEFAULT_SIMPLE_STAGE_TIMEOUT,
+                timeout=self._stage_timeout(),
             ),
         )
         self.add_stage(
@@ -238,7 +246,7 @@ class DefaultPipelineBuilder(PipelineBuilder):
                     strategy="best_fitness",
                     max_selected=2,
                 ),
-                timeout=DEFAULT_SIMPLE_STAGE_TIMEOUT,
+                timeout=self._stage_timeout(),
             ),
         )
 
@@ -249,7 +257,7 @@ class DefaultPipelineBuilder(PipelineBuilder):
                 task_description=task_description,
                 metrics_context=metrics_context,
                 storage=storage,
-                timeout=DEFAULT_SIMPLE_STAGE_TIMEOUT,
+                timeout=self._stage_timeout(),
                 prompts_dir=prompts_dir,
             ),
         )
@@ -259,7 +267,7 @@ class DefaultPipelineBuilder(PipelineBuilder):
             lambda: LineagesToDescendants(
                 storage=storage,
                 source_stage_name="LineageStage",
-                timeout=DEFAULT_SIMPLE_STAGE_TIMEOUT,
+                timeout=self._stage_timeout(),
             ),
         )
 
@@ -268,7 +276,7 @@ class DefaultPipelineBuilder(PipelineBuilder):
             lambda: LineagesFromAncestors(
                 storage=storage,
                 source_stage_name="LineageStage",
-                timeout=DEFAULT_SIMPLE_STAGE_TIMEOUT,
+                timeout=self._stage_timeout(),
             ),
         )
 
@@ -276,21 +284,21 @@ class DefaultPipelineBuilder(PipelineBuilder):
             "MutationContextStage",
             lambda: MutationContextStage(
                 metrics_context=metrics_context,
-                timeout=DEFAULT_SIMPLE_STAGE_TIMEOUT,
+                timeout=self._stage_timeout(),
             ),
         )
 
         self.add_stage(
             "ComputeComplexityStage",
             lambda: ComputeComplexityStage(
-                timeout=DEFAULT_SIMPLE_STAGE_TIMEOUT,
+                timeout=self._stage_timeout(),
             ),
         )
 
         self.add_stage(
             "MergeMetricsStage",
             lambda: MergeDictStage[str, float](
-                timeout=DEFAULT_SIMPLE_STAGE_TIMEOUT,
+                timeout=self._stage_timeout(),
             ),
         )
 
@@ -299,7 +307,7 @@ class DefaultPipelineBuilder(PipelineBuilder):
             lambda: EnsureMetricsStage(
                 metrics_factory=metrics_context.get_sentinels,
                 metrics_context=metrics_context,
-                timeout=DEFAULT_SIMPLE_STAGE_TIMEOUT,
+                timeout=self._stage_timeout(),
             ),
         )
         self.add_stage(
@@ -307,7 +315,7 @@ class DefaultPipelineBuilder(PipelineBuilder):
             lambda: EvolutionaryStatisticsCollector(
                 storage=storage,
                 metrics_context=metrics_context,
-                timeout=DEFAULT_SIMPLE_STAGE_TIMEOUT,
+                timeout=self._stage_timeout(),
             ),
         )
 
@@ -394,7 +402,7 @@ class ContextPipelineBuilder(DefaultPipelineBuilder):
             lambda: CallFileFunction(
                 path=problem_ctx.problem_dir / ProblemLayout.CONTEXT_FILE,
                 function_name="build_context",
-                timeout=DEFAULT_SIMPLE_STAGE_TIMEOUT,
+                timeout=self._stage_timeout(),
             ),
         )
 
@@ -458,7 +466,7 @@ class CMAOptPipelineBuilder(DefaultPipelineBuilder):
             lambda: CallFileFunction(
                 path=problem_ctx.problem_dir / ProblemLayout.CONTEXT_FILE,
                 function_name="build_context",
-                timeout=DEFAULT_SIMPLE_STAGE_TIMEOUT,
+                timeout=self._stage_timeout(),
             ),
         )
         self.add_data_flow_edge("AddContext", "CallProgramFunction", "context")
@@ -584,7 +592,7 @@ class OptunaOptPipelineBuilder(DefaultPipelineBuilder):
             lambda: CallFileFunction(
                 path=problem_ctx.problem_dir / ProblemLayout.CONTEXT_FILE,
                 function_name="build_context",
-                timeout=DEFAULT_SIMPLE_STAGE_TIMEOUT,
+                timeout=self._stage_timeout(),
             ),
         )
         self.add_data_flow_edge("AddContext", "CallProgramFunction", "context")
@@ -669,11 +677,11 @@ class OptunaOptPipelineBuilder(DefaultPipelineBuilder):
         # CallValidatorFunction always runs (single source of truth).
         self.add_stage(
             "OptunaPayloadBridge",
-            lambda: OptunaPayloadBridge(timeout=DEFAULT_SIMPLE_STAGE_TIMEOUT),
+            lambda: OptunaPayloadBridge(timeout=self._stage_timeout()),
         )
         self.add_stage(
             "PayloadResolver",
-            lambda: PayloadResolver(timeout=DEFAULT_SIMPLE_STAGE_TIMEOUT),
+            lambda: PayloadResolver(timeout=self._stage_timeout()),
         )
 
         # Data flow: Optuna → bridge → resolver → validator
