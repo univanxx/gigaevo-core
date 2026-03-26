@@ -3,7 +3,7 @@ import os
 import sys
 import logging
 import re
-from typing import List, Tuple
+from typing import Dict, List, Optional, Tuple
 import random
 
 
@@ -13,16 +13,193 @@ sys.path.append("/media/ssd-3t/isviridov/alphaevolve/mediQ/src")
 # Default data path
 DEFAULT_DATA_PATH = "/media/ssd-3t/isviridov/alphaevolve/mediQ/data/all_train_convo.jsonl"
 
-# Models specification (must match vLLM --served-model-name). Set by run.sh via MEDIQ_MODEL_NAME.
-MEDIQ_EXPERT_MODEL = os.environ.get("MEDIQ_MODEL_NAME")
+# Models specification (must match served model names). Set by run.sh.
+# Четыре env-переменные: две модели и два URL.
+#   MEDIQ_EXPERT_MODEL_NAME  – модель врача (и QG)
+#   MEDIQ_PATIENT_MODEL_NAME – модель пациента
+#   MEDIQ_EXPERT_URL         – base_url для врача/QG
+#   MEDIQ_PATIENT_URL        – base_url для пациента
+MEDIQ_EXPERT_MODEL = os.environ.get("MEDIQ_EXPERT_MODEL_NAME")
 MEDIQ_EXPERT_MODEL_QG = MEDIQ_EXPERT_MODEL
-MEDIQ_PATIENT_MODEL = MEDIQ_EXPERT_MODEL
-# URL for MedIQ LLM (patient/doctor). Set by run.sh; default for local vLLM on 44003.
-MEDIQ_VLLM_URL = os.environ.get("MEDIQ_VLLM_URL")
+MEDIQ_PATIENT_MODEL = os.environ.get("MEDIQ_PATIENT_MODEL_NAME", MEDIQ_EXPERT_MODEL)
+
+MEDIQ_EXPERT_URL = os.environ.get("MEDIQ_EXPERT_URL")
+MEDIQ_PATIENT_URL = os.environ.get("MEDIQ_PATIENT_URL", MEDIQ_EXPERT_URL)
 
 # Other fixed params
 MAX_CASES = 50
 
+PROGRAM_PARAM_RANGES = {
+    "self_consistency": (1, 3),
+    "max_questions": (1, 5),
+}
+
+# ---------------------------------------------------------------------------
+# Three-part batch composition: anchor + hard buffer + random
+#   MEDIQ_BATCH_MODE      = "composed" | "random"
+#   MEDIQ_ANCHOR_SIZE     = number of stable anchor samples per batch
+#   MEDIQ_HARD_BUFFER_SIZE = max hard-buffer slots (filled by weighted sampling)
+#   MEDIQ_ANCHOR_REFRESH  = anchor set lifetime in generations
+# ---------------------------------------------------------------------------
+BATCH_MODE = os.environ.get("MEDIQ_BATCH_MODE", "composed")
+BATCH_STATE_FILE = os.environ.get(
+    "MEDIQ_BATCH_STATE_FILE",
+    os.path.join(os.path.dirname(DEFAULT_DATA_PATH), "batch_state.json"),
+)
+ANCHOR_SIZE = int(os.environ.get("MEDIQ_ANCHOR_SIZE", "10"))
+HARD_BUFFER_MAX_SIZE = int(os.environ.get("MEDIQ_HARD_BUFFER_SIZE", "15"))
+ANCHOR_REFRESH_INTERVAL = int(os.environ.get("MEDIQ_ANCHOR_REFRESH", "5"))
+ANCHOR_BASE_SEED = 42
+HARD_BUFFER_BASE_SEED = 123456
+
+
+class BatchComposer:
+    """Composes evaluation batches from three parts for stable cross-generation comparison.
+
+    1. **Anchor set** — small fixed subset, refreshed every ``ANCHOR_REFRESH_INTERVAL``
+       generations.  Provides a stable baseline for cross-generation fitness comparison.
+    2. **Hard buffer** — dynamically maintained set of samples with high error rates
+       across recent evaluations.  Keeps selective pressure on genuinely difficult cases.
+    3. **Random portion** — fresh random samples drawn per-generation for diversity.
+
+    All candidates within the same generation receive identical batches (the batch
+    is deterministic given ``iteration`` and the current ``sample_stats``).
+    """
+
+    def __init__(
+        self,
+        total_data_size: int,
+        batch_size: int = MAX_CASES,
+        state_path: str = BATCH_STATE_FILE,
+    ):
+        self.total_data_size = total_data_size
+        self.batch_size = batch_size
+        self.state_path = state_path
+
+    # -- state persistence ----------------------------------------------------
+
+    @staticmethod
+    def _default_state() -> dict:
+        return {"sample_stats": {}}
+
+    def _read_state(self) -> dict:
+        if os.path.exists(self.state_path):
+            try:
+                with open(self.state_path, "r") as f:
+                    return json.load(f)
+            except (json.JSONDecodeError, OSError):
+                pass
+        return self._default_state()
+
+    def _write_state(self, state: dict) -> None:
+        tmp = self.state_path + ".tmp"
+        with open(tmp, "w") as f:
+            json.dump(state, f)
+        os.replace(tmp, self.state_path)
+
+    # -- batch part builders ---------------------------------------------------
+
+    def _compute_anchors(self, iteration: int) -> List[int]:
+        anchor_epoch = iteration // ANCHOR_REFRESH_INTERVAL
+        rng = random.Random(ANCHOR_BASE_SEED + anchor_epoch)
+        return sorted(
+            rng.sample(range(self.total_data_size), k=min(ANCHOR_SIZE, self.total_data_size))
+        )
+
+    def _compute_hard_buffer(
+        self, sample_stats: dict, exclude: set, iteration: int,
+    ) -> List[int]:
+        indices: List[int] = []
+        weights: List[float] = []
+        for idx_str, s in sample_stats.items():
+            idx = int(idx_str)
+            if idx in exclude or idx >= self.total_data_size:
+                continue
+            evals = s.get("evals", 0)
+            if evals < 1:
+                continue
+            error_rate = s.get("errors", 0) / evals
+            if error_rate > 0:
+                indices.append(idx)
+                weights.append(error_rate)
+        if not indices:
+            return []
+        k = min(HARD_BUFFER_MAX_SIZE, len(indices))
+        rng = random.Random(HARD_BUFFER_BASE_SEED + iteration)
+        selected: List[int] = []
+        for _ in range(k):
+            chosen = rng.choices(indices, weights=weights, k=1)[0]
+            pos = indices.index(chosen)
+            indices.pop(pos)
+            weights.pop(pos)
+            selected.append(chosen)
+            if not indices:
+                break
+        return selected
+
+    # -- public API ------------------------------------------------------------
+
+    def compose_batch(self, iteration: int) -> List[int]:
+        """Return a list of sample indices forming the evaluation batch."""
+        import fcntl
+
+        os.makedirs(os.path.dirname(self.state_path), exist_ok=True)
+        lock_path = self.state_path + ".lock"
+
+        with open(lock_path, "w") as lock:
+            fcntl.flock(lock, fcntl.LOCK_SH)
+            try:
+                state = self._read_state()
+            finally:
+                fcntl.flock(lock, fcntl.LOCK_UN)
+
+        anchor_indices = self._compute_anchors(iteration)
+        anchor_set = set(anchor_indices)
+
+        hard_indices = self._compute_hard_buffer(
+            state.get("sample_stats", {}), anchor_set, iteration,
+        )
+        hard_set = set(hard_indices)
+
+        used = anchor_set | hard_set
+        remaining = [i for i in range(self.total_data_size) if i not in used]
+        random_needed = max(0, self.batch_size - len(anchor_indices) - len(hard_indices))
+        rng = random.Random(iteration)
+        random_indices = rng.sample(remaining, k=min(random_needed, len(remaining)))
+
+        batch = anchor_indices + hard_indices + random_indices
+
+        log_info(
+            f"[BatchComposer] iter={iteration} "
+            f"anchor={len(anchor_indices)} hard={len(hard_indices)} "
+            f"random={len(random_indices)} total={len(batch)}"
+        )
+        return batch
+
+    def update_results(
+        self, batch_indices: List[int], correct_mask: List[bool], iteration: int,
+    ) -> None:
+        """Increment per-sample error/eval counters."""
+        import fcntl
+
+        lock_path = self.state_path + ".lock"
+        with open(lock_path, "w") as lock:
+            fcntl.flock(lock, fcntl.LOCK_EX)
+            try:
+                state = self._read_state()
+                stats = state.setdefault("sample_stats", {})
+
+                for idx, correct in zip(batch_indices, correct_mask):
+                    key = str(idx)
+                    if key not in stats:
+                        stats[key] = {"errors": 0, "evals": 0}
+                    stats[key]["evals"] += 1
+                    if not correct:
+                        stats[key]["errors"] += 1
+
+                self._write_state(state)
+            finally:
+                fcntl.flock(lock, fcntl.LOCK_UN)
 
 def log_info(message, logger_name="detail_logger", print_to_std=False, type="info"):
     logger = logging.getLogger(logger_name)
@@ -41,6 +218,8 @@ def log_info_expert(message, logger="detail_logger", print_to_std=False):
 global models
 models = {}
 
+_expert_responses: List[str] = []
+
 
 class ModelCacheHTTP:
     """ModelCache that uses vLLM server via OpenAI-compatible HTTP API."""
@@ -52,22 +231,26 @@ class ModelCacheHTTP:
         self._init_client()
     
     def _init_client(self):
+        import httpx
         from openai import OpenAI
+        proxy_url = self.args.get("proxy_url")
         self.client = OpenAI(
             base_url=self.base_url,
-            api_key=os.environ.get("OPENAI_API_KEY"),
+            api_key=self.args.get("api_key"),
+            http_client=httpx.Client(proxy=proxy_url) if proxy_url else None,
         )
-        log_info(f"[ModelCacheHTTP] Initialized client for {self.model_name} at {self.base_url}")
+        log_info(f"[ModelCacheHTTP] Initialized client for {self.model_name} at {self.base_url}"
+                 + (f" via proxy {proxy_url}" if proxy_url else ""))
     
     def generate(self, messages):
         log_info(f"[{self.model_name}][INPUT]: {messages}")
-        
+
         temperature = self.args.get("temperature")
         max_tokens = self.args.get("max_tokens")
         top_p = self.args.get("top_p")
         frequency_penalty = self.args.get("frequency_penalty", 0)
         presence_penalty = self.args.get("presense_penalty", 0)
-        
+
         try:
             response = self.client.chat.completions.create(
                 model=self.model_name,
@@ -78,12 +261,13 @@ class ModelCacheHTTP:
                 frequency_penalty=frequency_penalty,
                 presence_penalty=presence_penalty,
             )
+            if not response.choices:
+                raise RuntimeError(f"[PROVIDER ERROR, not a mutant bug] Empty choices in response: {response}")
             response_text = response.choices[0].message.content
         except Exception as e:
             log_info(f"[{self.model_name}][ERROR]: {e}", type="error")
             raise
-        
-        # Trimmed response for logging to avoid huge lines
+
         log_info(
             f"[{self.model_name}][OUTPUT]: "
             f"{{'response_text': '{response_text[:100]}...'}}"
@@ -92,14 +276,26 @@ class ModelCacheHTTP:
 
 
 def get_response(messages, model_name, **kwargs):
-    
+    is_patient = model_name == MEDIQ_PATIENT_MODEL
+    if is_patient:
+        base_url = MEDIQ_PATIENT_URL
+        api_key = os.environ.get("MEDIQ_PATIENT_API_KEY")
+        proxy_url = os.environ.get("MEDIQ_PATIENT_PROXY_URL")
+    else:
+        base_url = MEDIQ_EXPERT_URL
+        api_key = os.environ.get("MEDIQ_EXPERT_API_KEY")
+        proxy_url = None
+
     model_cache = models.get(model_name, None)
     if model_cache is None:
-        log_info(f"[get_response] Initializing HTTP client for {model_name} at {MEDIQ_VLLM_URL}")
-        model_cache = ModelCacheHTTP(model_name, base_url=MEDIQ_VLLM_URL, **kwargs)
+        log_info(f"[get_response] Initializing HTTP client for {model_name} at {base_url}")
+        model_cache = ModelCacheHTTP(model_name, base_url=base_url, api_key=api_key, proxy_url=proxy_url, **kwargs)
         models[model_name] = model_cache
     
-    return model_cache.generate(messages)
+    result = model_cache.generate(messages)
+    if not is_patient and isinstance(result, str):
+        _expert_responses.append(result)
+    return result
 
 
 def shutdown_models():
@@ -334,7 +530,7 @@ class Expert:
             "inquiry": self.inquiry,
             "options_dict": self.options,
             "abstain_threshold": self.args.abstain_threshold,
-            # "self_consistency": self.args.self_consistency,
+            "self_consistency": self.args.self_consistency,
             "model_name": MEDIQ_EXPERT_MODEL,
             "temperature": self.args.temperature,
             "max_tokens": self.args.max_tokens,
@@ -460,10 +656,10 @@ def question_generation(messages, task_prompt, **kwargs):
 
 
 class Args:
-    def __init__(self):
-        
+    def __init__(self, program_params):
         # Benchmark settings
-        self.max_questions = 10
+        self.max_questions = int(program_params["max_questions"])
+        self.self_consistency = int(program_params["self_consistency"])
         
         # Abstention settings
         # If abstain_threshold is None, each expert uses its own internal default
@@ -478,25 +674,41 @@ class Args:
         self.top_logprobs = 0
 
 
-def run_mediq(expert_class) -> Tuple[List, List[str], List[int], List[str]]:
-    
+def run_mediq(expert_class, seed=None, program_params=None) -> Tuple[List, List[str], List[int], List[str], Dict[str, Dict[str, int]]]:
+    if not isinstance(program_params, dict):
+        raise ValueError("PROGRAM_PARAMS must be a dict")
+    for name, (min_v, max_v) in PROGRAM_PARAM_RANGES.items():
+        val = int(program_params.get(name, -1))
+        if val < min_v or val > max_v:
+            raise ValueError(f"PROGRAM_PARAMS['{name}']={val} out of range [{min_v}, {max_v}]")
+
     data_path = DEFAULT_DATA_PATH
     max_cases = MAX_CASES
     
-    args = Args()
+    args = Args(program_params=program_params)
     patient_data = load_data(data_path)
-    
-    # Limit cases if needed
+
+    batch_indices: Optional[List[int]] = None
+    composer: Optional[BatchComposer] = None
+
     if max_cases and max_cases < len(patient_data):
-        patient_data = random.sample(patient_data, k=max_cases)
+        if seed is not None and BATCH_MODE == "composed":
+            composer = BatchComposer(len(patient_data))
+            batch_indices = composer.compose_batch(seed)
+            patient_data = [patient_data[i] for i in batch_indices]
+        elif seed is not None:
+            rng = random.Random(seed)
+            patient_data = rng.sample(patient_data, k=max_cases)
+        else:
+            patient_data = random.sample(patient_data, k=max_cases)
     
     dialogues = []
     diagnoses = []
     case_ids = []
-    ground_truth = []  # Collect correct answers directly from data
-    
+    ground_truth = []
+    all_expert_responses: List[List[str]] = []
     for i, sample in enumerate(patient_data):
-        # Run interaction exactly like mediQ_benchmark.py
+        _expert_responses.clear()
         letter_choice, questions, answers, temp_additional_info, sample_info = run_patient_interaction(
             expert_class=expert_class,
             patient_class=FactSelectPatient,
@@ -504,7 +716,6 @@ def run_mediq(expert_class) -> Tuple[List, List[str], List[int], List[str]]:
             sample=sample
         )
         
-        # Build dialogue in format for validate(): List[(name, replic)]
         dialogue = []
         for q, a in zip(questions, answers):
             dialogue.append(("doctor", q))
@@ -514,9 +725,18 @@ def run_mediq(expert_class) -> Tuple[List, List[str], List[int], List[str]]:
         dialogues.append(dialogue)
         diagnoses.append(letter_choice)
         case_ids.append(i)
-        ground_truth.append(sample["answer_idx"])  # Store correct answer
-    
-    return dialogues, diagnoses, case_ids, ground_truth
+        ground_truth.append(sample["answer_idx"])
+        all_expert_responses.append(list(_expert_responses))
+
+    if composer is not None and batch_indices is not None and seed is not None:
+        correct_mask = [d == gt for d, gt in zip(diagnoses, ground_truth)]
+        composer.update_results(batch_indices, correct_mask, seed)
+
+    run_metadata = {
+        "program_params": {"max_questions": args.max_questions, "self_consistency": args.self_consistency},
+        "expert_responses": all_expert_responses,
+    }
+    return dialogues, diagnoses, case_ids, ground_truth, run_metadata
 
 
 ##### SELF-CONSISTENCY #####
@@ -548,6 +768,26 @@ def run_mediq(expert_class) -> Tuple[List, List[str], List[int], List[str]]:
 #     confidence = yes_no_responses.count("YES") / len(yes_no_responses)
 #     log_info(f"[<YES/NO RETURN>]: yes_choice: {yes_choice}, confidence: {confidence}")
 #     return response_texts[yes_choice], yes_choice, confidence
+
+### NO SELF-CONSISTENCY ###
+# def expert_response_yes_no(messages, **kwargs):
+#     """
+#     Binary Abstain
+#     """
+#     log_info(f"++++++++++++++++++++ Start of YES/NO Decision [py:expert_response_yes_no()] ++++++++++++++++++++")
+#     log_info(f"[<YES/NO PROMPT>] [len(messages)={len(messages)}] (messages[-1]):\n{messages[-1]['content']}")
+
+#     response_text = get_response(messages, **kwargs)
+#     if not response_text:
+#         log_info("[<YES/NO LM RES>]: " + "No response.")
+#     log_info("[<YES/NO LM RES>]: " + response_text)
+
+#     yes_choice = parse_yes_no(response_text)
+#     log_info("[<YES/NO PARSED>]: " + yes_choice)
+#     confidence = 1.0 if yes_choice == "YES" else 0.0
+#     log_info(f"[<YES/NO RETURN>]: yes_choice: {yes_choice}, confidence: {confidence}")
+#     return response_text, yes_choice, confidence
+
 
 ### IMPLICIT ###
 # def expert_response_choice_or_question(messages, options_dict, **kwargs):
@@ -600,6 +840,39 @@ def run_mediq(expert_class) -> Tuple[List, List[str], List[int], List[str]]:
 #     log_info(f"[<IMPLICIT ABSTAIN RETURN>]: atomic_question: {atomic_question}, final_answer: {final_answer}, conf_score: {conf_score} ([{len(answers)} : {len(questions)}])")
 #     return response_text, atomic_question, final_answer, conf_score
 
+### NO SELF-CONSISTENCY ###
+# def expert_response_choice_or_question(messages, options_dict, **kwargs):
+#     """
+#     Implicit Abstain
+#     """
+#     log_info(f"++++++++++++++++++++ Start of Implicit Abstention [py:expert_response_choice_or_question()] ++++++++++++++++++++")
+#     log_info(f"[<IMPLICIT ABSTAIN PROMPT>] [len(messages)={len(messages)}] (messages[-1]):\n{messages[-1]['content']}")
+
+#     response_text = get_response(messages, **kwargs)
+#     if not response_text:
+#         log_info("[<IMPLICIT ABSTAIN LM RES>]: " + "No response.")
+#         return "No response.", None, None, 0.0
+#     log_info("[<IMPLICIT ABSTAIN LM RES>]: " + response_text)
+#     response_text = response_text.replace("Confident --> Answer: ", "").replace("Not confident --> Doctor Question: ", "")
+
+#     if "?" not in response_text:
+#         letter_choice = parse_choice(response_text, options_dict)
+#         if letter_choice:
+#             log_info("[<IMPLICIT ABSTAIN PARSED>]: " + letter_choice)
+#             log_info(f"[<IMPLICIT ABSTAIN RETURN>]: atomic_question: None, final_answer: {letter_choice}, conf_score: 1.0")
+#             return response_text, None, letter_choice, 1.0
+#     else:
+#         atomic_question = parse_atomic_question(response_text)
+#         if atomic_question:
+#             log_info("[<IMPLICIT ABSTAIN PARSED>]: " + atomic_question)
+#             log_info(f"[<IMPLICIT ABSTAIN RETURN>]: atomic_question: {atomic_question}, final_answer: None, conf_score: 0.0")
+#             return response_text, atomic_question, None, 0.0
+#         log_info("[<IMPLICIT ABSTAIN PARSED>]: " + "FAILED TO PARSE")
+
+#     log_info("[<IMPLICIT ABSTAIN RETURN>]: No valid parse.")
+#     return "No response.", None, None, 0.0
+
+
 ### NUMERICAL ###
 # def expert_response_confidence_score(messages, **kwargs):
 #     """
@@ -632,6 +905,26 @@ def run_mediq(expert_class) -> Tuple[List, List[str], List[int], List[str]]:
 #     log_info(f"[<CONF SCORE RETURN>] (average conf score): {avg_conf_score}")
 #     return response_text, avg_conf_score
 
+### NO SELF-CONSISTENCY ###
+# def expert_response_confidence_score(messages, **kwargs):
+#     """
+#     Numerical Abstain
+#     """
+#     log_info(f"++++++++++++++++++++ Start of Numerical Confidence Score [py:expert_response_confidence_score()] ++++++++++++++++++++")
+#     log_info(f"[<CONF SCORE PROMPT>] [len(messages)={len(messages)}] (messages[-1]):\n{messages[-1]['content']}")
+
+#     response_text = get_response(messages, **kwargs)
+#     if not response_text:
+#         log_info("[<CONF SCORE LM RES>]: " + "No response.")
+#         return "No response.", 0.0
+#     log_info("[<CONF SCORE LM RES>]: " + response_text)
+
+#     conf_score = parse_confidence_score(response_text)
+#     log_info(f"[<CONF SCORE PARSED>]: {conf_score}")
+#     log_info(f"[<CONF SCORE RETURN>] (conf score): {conf_score}")
+#     return response_text, conf_score
+
+
 ### SCALE ###
 # def expert_response_scale_score(messages, **kwargs):
 #     """
@@ -662,3 +955,22 @@ def run_mediq(expert_class) -> Tuple[List, List[str], List[int], List[str]]:
 #         avg_conf_score, response_text = 0, "No response."
 #     log_info(f"[<SCALE SCORE RETURN>] (average conf score]): {avg_conf_score}")
 #     return response_text, avg_conf_score
+
+### NO SELF-CONSISTENCY ###
+# def expert_response_scale_score(messages, **kwargs):
+#     """
+#     Scale Abstain
+#     """
+#     log_info(f"++++++++++++++++++++ Start of Scale Confidence Score [py:expert_response_scale_score()] ++++++++++++++++++++")
+#     log_info(f"[<SCALE SCORE PROMPT>] [len(messages)={len(messages)}] (messages[-1]):\n{messages[-1]['content']}")
+
+#     response_text = get_response(messages, **kwargs)
+#     if not response_text:
+#         log_info("[<SCALE SCORE LM RES>]: " + "No response.")
+#         return "No response.", 0.0
+#     log_info("[<SCALE SCORE LM RES>]: " + response_text)
+
+#     conf_score = parse_likert_scale(response_text)
+#     log_info("[<SCALE SCORE PARSED>]: " + str(conf_score))
+#     log_info(f"[<SCALE SCORE RETURN>] (conf score): {conf_score}")
+#     return response_text, conf_score

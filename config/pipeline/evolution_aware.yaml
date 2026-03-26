@@ -1,0 +1,23 @@
+# @package _global_
+
+# Evolution-aware pipeline: provides per-generation seed and ancestor metrics
+# to both program entrypoint and validator for fair evaluation.
+
+# Evolution context
+evolution_context:
+  _target_: gigaevo.entrypoint.evolution_context.EvolutionContext
+  problem_ctx: ${problem_context}
+  llm_wrapper: ${ref:llm}
+  storage: ${ref:redis_storage}
+  prompts_dir: ${prompts.dir}
+  stage_timeout: ${stage_timeout}
+  dag_timeout: ${dag_timeout}
+
+pipeline_builder:
+  _target_: gigaevo.entrypoint.default_pipelines.EvolutionAwarePipelineBuilder
+  ctx: ${evolution_context}
+
+# Build DAG blueprint
+dag_blueprint:
+  _target_: gigaevo.config.helpers.build_dag_from_builder
+  builder: ${pipeline_builder}

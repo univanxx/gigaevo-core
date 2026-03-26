@@ -1,12 +1,35 @@
 """
 Computes accuracy and token usage from doctor-patient dialogues.
+
+When called with an evolution-aware context (ancestor_metrics), applies:
+  - Exponentially weighted ancestor fitness for a smoother family-level score.
+  - Delta-based validity gate: if the mutant's raw fitness deviates from the
+    weighted ancestor average by more than FITNESS_DELTA_THRESHOLD, the
+    solution is marked invalid (is_valid=0) to suppress noise.
 """
 
-from typing import Dict
+from typing import Dict, List, Optional
 import os
 from transformers import AutoTokenizer
 
-# Lazy-load so multiple processes (e.g. run_all_experts.sh) don't block each other on import.
+# ---------------------------------------------------------------------------
+# Tunable constants
+# ---------------------------------------------------------------------------
+EXP_DECAY: float = 0.7
+"""Decay factor for exponential ancestor weighting (0 < decay <= 1).
+   Weight of ancestor at depth *i* is ``decay ** i``."""
+
+ANCESTOR_WEIGHT: float = 0.3
+"""Fraction of effective fitness attributed to the weighted ancestor average.
+   ``effective = (1 - ANCESTOR_WEIGHT) * current + ANCESTOR_WEIGHT * ancestor_avg``."""
+
+FITNESS_DELTA_THRESHOLD: float = 0.15
+"""Maximum allowed absolute difference between current fitness and the
+   weighted ancestor average.  Exceeding this marks the mutant as invalid."""
+
+# ---------------------------------------------------------------------------
+# Tokenizer (lazy-loaded)
+# ---------------------------------------------------------------------------
 _TOKENIZER = None
 
 
@@ -26,42 +49,115 @@ def _get_tokenizer():
     return _TOKENIZER
 
 
-def get_tokens_count(dialogue, tokenizer):
-    doctor_tokens_count = 0
-    for name, replic in dialogue:
-        if name == "doctor" and replic is not None:
-            try:
-                text = replic if isinstance(replic, str) else str(replic)
-            except Exception:
-                text = ""
-            replic_tokens = tokenizer.encode(text, add_special_tokens=False)
-            doctor_tokens_count += len(replic_tokens)
-    return doctor_tokens_count
+# ---------------------------------------------------------------------------
+# Ancestor weighting helpers
+# ---------------------------------------------------------------------------
 
+def _weighted_ancestor_fitness(
+    ancestor_metrics: List[dict],
+    key: str = "fitness",
+    decay: float = EXP_DECAY,
+) -> Optional[float]:
+    """Return the exponentially weighted average of *key* across ancestors.
 
-def validate(data) -> Dict[str, float]:
+    ``ancestor_metrics[0]`` is the immediate parent, ``[1]`` the grandparent, etc.
+    Returns ``None`` when no ancestor carries *key*.
     """
-    Compute accuracy and mean tokens count from the dialogues.
+    if not ancestor_metrics:
+        return None
 
-    Args:
-        data: Tuple of (dialogues, diagnoses, case_ids, ground_truth) returned by entrypoint().
+    total_weight = 0.0
+    weighted_sum = 0.0
+    for i, m in enumerate(ancestor_metrics):
+        val = m.get(key)
+        if val is None:
+            continue
+        w = decay ** i
+        weighted_sum += val * w
+        total_weight += w
+
+    if total_weight == 0.0:
+        return None
+    return weighted_sum / total_weight
+
+
+def _compute_effective_fitness(
+    current: float,
+    ancestor_avg: Optional[float],
+    ancestor_weight: float = ANCESTOR_WEIGHT,
+) -> float:
+    """Blend current fitness with weighted ancestor average."""
+    if ancestor_avg is None:
+        return current
+    return (1.0 - ancestor_weight) * current + ancestor_weight * ancestor_avg
+
+
+# ---------------------------------------------------------------------------
+# Main validation entry-point
+# ---------------------------------------------------------------------------
+
+def validate(context_or_data, data=None) -> Dict[str, float]:
+    """Compute accuracy, token cost, and validity.
+
+    Supports two call signatures (auto-detected):
+      - ``validate(data)``           – no evolution context
+      - ``validate(context, data)``  – with evolution-aware context
     """
-    # Unpack all values from entrypoint()
-    dialogues, diagnoses, _case_ids, ground_truth = data
-    
+    if data is None:
+        data = context_or_data
+        context: Optional[dict] = None
+    else:
+        context = context_or_data
+
+    dialogues, diagnoses, _case_ids, ground_truth, run_metadata = data
+
     if len(ground_truth) != len(diagnoses):
-        raise ValueError(f"Number of cases for predictions and ground truth must match! Got {len(diagnoses)} for predictions, should be {len(ground_truth)}")
-    
+        raise ValueError(
+            f"Number of cases for predictions and ground truth must match! "
+            f"Got {len(diagnoses)} for predictions, should be {len(ground_truth)}"
+        )
+
     tokenizer = _get_tokenizer()
     correct_answs = 0
-    dialogue_length = 0
-    for dialogue_i, diagnosis_i, ground_truth_i in zip(dialogues, diagnoses, ground_truth):
+    total_expert_tokens = 0
+    expert_responses = run_metadata["expert_responses"]
+
+    token_cases = 0
+    for case_responses, diagnosis_i, ground_truth_i in zip(
+        expert_responses, diagnoses, ground_truth
+    ):
         if diagnosis_i == ground_truth_i:
             correct_answs += 1
-        dialogue_length += get_tokens_count(dialogue_i, tokenizer)
-    
+        if case_responses:
+            token_cases += 1
+            for text in case_responses:
+                total_expert_tokens += len(
+                    tokenizer.encode(str(text), add_special_tokens=False)
+                )
+
+    raw_fitness = correct_answs / len(ground_truth)
+    tokens_count = (
+        total_expert_tokens / token_cases if token_cases > 0 else 0.0
+    )
+
+    # --- Evolution-aware adjustments ------------------------------------------
+    ancestor_metrics: List[dict] = []
+    if context is not None:
+        ancestor_metrics = context.get("ancestor_metrics", [])
+
+    ancestor_avg = _weighted_ancestor_fitness(ancestor_metrics, key="fitness")
+
+    effective_fitness = _compute_effective_fitness(raw_fitness, ancestor_avg)
+
+    # Delta-based validity gate
+    is_valid: int = 1
+    if ancestor_avg is not None:
+        delta = ancestor_avg - raw_fitness
+        if delta > FITNESS_DELTA_THRESHOLD:
+            is_valid = 0
+
     return {
-        "fitness": correct_answs / len(ground_truth),
-        "tokens_count": dialogue_length / len(ground_truth),
-        "is_valid": 1
+        "fitness": effective_fitness,
+        "tokens_count": tokens_count,
+        "is_valid": is_valid,
     }

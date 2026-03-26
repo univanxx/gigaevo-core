@@ -38,6 +38,7 @@ from gigaevo.programs.stages.optimization.optuna import (
     OptunaPayloadBridge,
     PayloadResolver,
 )
+from gigaevo.programs.stages.evolution_context import EvolutionAwareContextStage
 from gigaevo.programs.stages.python_executors.execution import (
     CallFileFunction,
     CallProgramFunction,
@@ -704,6 +705,49 @@ class OptunaOptPipelineBuilder(DefaultPipelineBuilder):
         self.add_exec_dep(
             "CallProgramFunction",
             ExecutionOrderDependency.on_failure("OptunaOptStage"),
+        )
+
+
+class EvolutionAwarePipelineBuilder(DefaultPipelineBuilder):
+    """Default pipeline with an EvolutionAwareContextStage that provides
+    per-generation seed and ancestor metrics to both the program entrypoint
+    and the validator.
+
+    Use this builder for problems where:
+    - Fair comparison requires all mutants in one generation to be evaluated
+      on the same data subset (deterministic seed).
+    - Validation should incorporate ancestor fitness (exponential weighting,
+      delta-based validity checks).
+
+    Wiring::
+
+        EvolutionAwareContext ─(context)─► CallProgramFunction
+                              ─(context)─► CallValidatorFunction
+    """
+
+    DEFAULT_MAX_ANCESTOR_DEPTH: int = 5
+
+    def __init__(self, ctx: EvolutionContext, *, dag_timeout: float = 3600.0):
+        super().__init__(ctx, dag_timeout=dag_timeout)
+        self._add_evolution_aware_context()
+
+    def _add_evolution_aware_context(self) -> None:
+        storage = self.ctx.storage
+
+        self.add_stage(
+            "EvolutionAwareContext",
+            lambda: EvolutionAwareContextStage(
+                storage=storage,
+                max_ancestor_depth=self.DEFAULT_MAX_ANCESTOR_DEPTH,
+                timeout=self._stage_timeout(),
+            ),
+        )
+
+        self.add_data_flow_edge(
+            "EvolutionAwareContext", "CallProgramFunction", "context"
+        )
+        self.add_data_flow_edge(
+            "EvolutionAwareContext", "CallValidatorFunction", "context"
         )
 
 
