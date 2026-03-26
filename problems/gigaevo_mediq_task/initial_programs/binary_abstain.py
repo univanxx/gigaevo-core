@@ -1,6 +1,11 @@
 from helper import log_info_expert, log_info, get_response, expert_response_choice, parse_yes_no, Expert, question_generation, run_mediq
 from typing import List, Tuple
 
+PROGRAM_PARAMS = {
+    "self_consistency": 3,
+    "max_questions": 6,
+}
+
 
 expert_system = {
     "system_msg": "You are a medical doctor trying to reason through a real-life clinical case. Based on your understanding of basic and clinical science, medical knowledge, and mechanisms underlying health, disease, patient care, and modes of therapy, respond according to the task specified by the user. Base your response on the current and standard practices referenced in medical guidelines.",
@@ -100,16 +105,26 @@ def expert_response_yes_no(messages, **kwargs):
     log_info(f"++++++++++++++++++++ Start of YES/NO Decision [py:expert_response_yes_no()] ++++++++++++++++++++")
     log_info(f"[<YES/NO PROMPT>] [len(messages)={len(messages)}] (messages[-1]):\n{messages[-1]['content']}")
 
-    response_text = get_response(messages, **kwargs)
-    if not response_text:
-        log_info("[<YES/NO LM RES>]: " + "No response.")
-    log_info("[<YES/NO LM RES>]: " + response_text)
+    yes_no_responses, response_texts = [], {}
+    for i in range(PROGRAM_PARAMS["self_consistency"]):
+        log_info(f"-------------------- Self-Consistency Iteration {i+1} --------------------")
+        response_text = get_response(messages, **kwargs)
+        if not response_text: 
+            log_info("[<YES/NO LM RES>]: " + "No response.")
+        log_info("[<YES/NO LM RES>]: " + response_text)
 
-    yes_choice = parse_yes_no(response_text)
-    log_info("[<YES/NO PARSED>]: " + yes_choice)
-    confidence = 1.0 if yes_choice == "YES" else 0.0
+        yes_choice = parse_yes_no(response_text)
+        log_info("[<YES/NO PARSED>]: " + yes_choice)
+        yes_no_responses.append(yes_choice)
+        response_texts[yes_choice] = response_text
+    
+    if yes_no_responses.count("YES") > yes_no_responses.count("NO"):
+        yes_choice = "YES"
+    else:
+        yes_choice = "NO"
+    confidence = yes_no_responses.count("YES") / len(yes_no_responses)
     log_info(f"[<YES/NO RETURN>]: yes_choice: {yes_choice}, confidence: {confidence}")
-    return response_text, yes_choice, confidence
+    return response_texts[yes_choice], yes_choice, confidence
 
 
 def _get_letter_choice_for_state(patient_state, inquiry, options_dict, **kwargs):
@@ -157,5 +172,6 @@ class CustomExpert(Expert):
         return _get_letter_choice_for_state(patient_state, self.inquiry, self.options, **kwargs)
 
 
-def entrypoint() -> Tuple[List, List[str], List[int], List[str]]:
-    return run_mediq(CustomExpert)
+def entrypoint(context=None) -> Tuple[List, List[str], List[int], List[str], dict]:
+    seed = context.get("seed") if context else None
+    return run_mediq(CustomExpert, seed=seed, program_params=PROGRAM_PARAMS)

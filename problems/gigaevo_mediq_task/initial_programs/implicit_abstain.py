@@ -1,5 +1,11 @@
 from helper import log_info, log_info_expert, get_response, Expert, parse_atomic_question, run_mediq, parse_choice, expert_response_choice
 from typing import List, Tuple
+import random
+
+PROGRAM_PARAMS = {
+    "self_consistency": 3,
+    "max_questions": 6,
+}
 
 
 expert_system = {
@@ -30,30 +36,49 @@ def expert_response_choice_or_question(messages, options_dict, **kwargs):
     """
     log_info(f"++++++++++++++++++++ Start of Implicit Abstention [py:expert_response_choice_or_question()] ++++++++++++++++++++")
     log_info(f"[<IMPLICIT ABSTAIN PROMPT>] [len(messages)={len(messages)}] (messages[-1]):\n{messages[-1]['content']}")
+    answers, questions, response_texts = [], [], {}
+    for i in range(PROGRAM_PARAMS["self_consistency"]):
+        log_info(f"-------------------- Self-Consistency Iteration {i+1} --------------------")
+        response_text = get_response(messages, **kwargs)
+        if not response_text: 
+            log_info("[<IMPLICIT ABSTAIN LM RES>]: " + "No response --> Re-prompt")
+            continue
+        log_info("[<IMPLICIT ABSTAIN LM RES>]: " + response_text)
+        response_text = response_text.replace("Confident --> Answer: ", "").replace("Not confident --> Doctor Question: ", "")
 
-    response_text = get_response(messages, **kwargs)
-    if not response_text:
-        log_info("[<IMPLICIT ABSTAIN LM RES>]: " + "No response.")
+        if "?" not in response_text:
+            letter_choice = parse_choice(response_text, options_dict)
+            if letter_choice:
+                log_info("[<IMPLICIT ABSTAIN PARSED>]: " + letter_choice)
+                answers.append(letter_choice)
+                response_texts[letter_choice] = response_text
+        else:
+            # not a choice, parse as question
+            atomic_question = parse_atomic_question(response_text)
+            if atomic_question:
+                log_info("[<IMPLICIT ABSTAIN PARSED>]: " + atomic_question)
+                questions.append(atomic_question)
+                response_texts[atomic_question] = response_text
+            
+            else:
+                log_info("[<IMPLICIT ABSTAIN PARSED>]: " + "FAILED TO PARSE --> Re-prompt")
+
+    if len(answers) + len(questions) == 0:
+        log_info("[<IMPLICIT ABSTAIN SC-PARSED>]: " + "No response.")
         return "No response.", None, None, 0.0
-    log_info("[<IMPLICIT ABSTAIN LM RES>]: " + response_text)
-    response_text = response_text.replace("Confident --> Answer: ", "").replace("Not confident --> Doctor Question: ", "")
 
-    if "?" not in response_text:
-        letter_choice = parse_choice(response_text, options_dict)
-        if letter_choice:
-            log_info("[<IMPLICIT ABSTAIN PARSED>]: " + letter_choice)
-            log_info(f"[<IMPLICIT ABSTAIN RETURN>]: atomic_question: None, final_answer: {letter_choice}, conf_score: 1.0")
-            return response_text, None, letter_choice, 1.0
+    conf_score = len(answers) / (len(answers) + len(questions))
+    if len(answers) > len(questions): 
+        final_answer = max(set(answers), key = answers.count)
+        response_text = response_texts[final_answer]
+        atomic_question = None
     else:
-        atomic_question = parse_atomic_question(response_text)
-        if atomic_question:
-            log_info("[<IMPLICIT ABSTAIN PARSED>]: " + atomic_question)
-            log_info(f"[<IMPLICIT ABSTAIN RETURN>]: atomic_question: {atomic_question}, final_answer: None, conf_score: 0.0")
-            return response_text, atomic_question, None, 0.0
-        log_info("[<IMPLICIT ABSTAIN PARSED>]: " + "FAILED TO PARSE")
-
-    log_info("[<IMPLICIT ABSTAIN RETURN>]: No valid parse.")
-    return "No response.", None, None, 0.0
+        final_answer = None
+        rand_id = random.choice(range(len(questions)))
+        atomic_question = questions[rand_id]
+        response_text = response_texts[atomic_question]
+    log_info(f"[<IMPLICIT ABSTAIN RETURN>]: atomic_question: {atomic_question}, final_answer: {final_answer}, conf_score: {conf_score} ([{len(answers)} : {len(questions)}])")
+    return response_text, atomic_question, final_answer, conf_score
 
 
 def implicit_abstention_decision(patient_state, inquiry, options_dict, **kwargs):
@@ -129,5 +154,6 @@ class CustomExpert(Expert):
         return _implicit_force_final_choice(patient_state, self.inquiry, self.options, **kwargs)
 
 
-def entrypoint() -> Tuple[List, List[str], List[int], List[str]]:
-    return run_mediq(CustomExpert)
+def entrypoint(context=None) -> Tuple[List, List[str], List[int], List[str], dict]:
+    seed = context.get("seed") if context else None
+    return run_mediq(CustomExpert, seed=seed, program_params=PROGRAM_PARAMS)

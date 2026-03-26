@@ -1,8 +1,13 @@
 from helper import log_info, log_info_expert, expert_response_choice, Expert, question_generation, get_response, run_mediq
 from typing import List, Tuple
 
+PROGRAM_PARAMS = {
+    "self_consistency": 3,
+    "max_questions": 6,
+}
 
-SCALE_THRESHOLD = 2.0
+
+SCALE_THRESHOLD = 5.0
 
 
 expert_system = {
@@ -61,16 +66,28 @@ def expert_response_scale_score(messages, **kwargs):
     log_info(f"++++++++++++++++++++ Start of Scale Confidence Score [py:expert_response_scale_score()] ++++++++++++++++++++")
     log_info(f"[<SCALE SCORE PROMPT>] [len(messages)={len(messages)}] (messages[-1]):\n{messages[-1]['content']}")
 
-    response_text = get_response(messages, **kwargs)
-    if not response_text:
-        log_info("[<SCALE SCORE LM RES>]: " + "No response.")
-        return "No response.", 0.0
-    log_info("[<SCALE SCORE LM RES>]: " + response_text)
+    conf_scores, response_texts = [], {}
+    for i in range(PROGRAM_PARAMS["self_consistency"]):
+        log_info(f"-------------------- Self-Consistency Iteration {i+1} --------------------")
+        response_text = get_response(messages, **kwargs)
+        if not response_text:
+            log_info("[<SCALE SCORE LM RES>]: " + "No response.")
+            continue
+        log_info("[<SCALE SCORE LM RES>]: " + response_text)
 
-    conf_score = parse_likert_scale(response_text)
-    log_info("[<SCALE SCORE PARSED>]: " + str(conf_score))
-    log_info(f"[<SCALE SCORE RETURN>] (conf score): {conf_score}")
-    return response_text, conf_score
+        conf_score = parse_likert_scale(response_text)
+        conf_scores.append(conf_score)
+        response_texts[conf_score] = response_text
+        log_info("[<SCALE SCORE PARSED>]: " + str(conf_score))
+    
+    if len(conf_scores) > 0:
+        avg_conf_score = sum(conf_scores) / len(conf_scores)
+        temp = [abs(r - avg_conf_score) for r in conf_scores]
+        response_text = response_texts[conf_scores[temp.index(min(temp))]]
+    else:
+        avg_conf_score, response_text = 0, "No response."
+    log_info(f"[<SCALE SCORE RETURN>] (average conf score]): {avg_conf_score}")
+    return response_text, avg_conf_score
 
 
 def scale_abstention_decision(patient_state, inquiry, options_dict, abstain_threshold, **kwargs):
@@ -187,5 +204,6 @@ class CustomExpert(Expert):
         return _scale_force_final_choice(patient_state, self.inquiry, self.options, **kwargs)
 
 
-def entrypoint() -> Tuple[List, List[str], List[int], List[str]]:
-    return run_mediq(CustomExpert)
+def entrypoint(context=None) -> Tuple[List, List[str], List[int], List[str], dict]:
+    seed = context.get("seed") if context else None
+    return run_mediq(CustomExpert, seed=seed, program_params=PROGRAM_PARAMS)
