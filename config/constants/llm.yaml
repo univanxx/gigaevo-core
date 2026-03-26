@@ -6,3 +6,6 @@ max_tokens: 81920
 top_p: 0.95
 top_k: 20
 request_timeout: 1800
+
+# For reasoning models (e.g. gpt-oss): low | medium | high. Ignored by non-reasoning backends.
+reasoning_effort: medium
