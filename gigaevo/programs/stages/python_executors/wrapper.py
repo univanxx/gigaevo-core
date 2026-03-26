@@ -126,7 +126,7 @@ class WorkerPool:
     Pass to run_exec_runner(pool=...) or use the default from default_exec_runner_pool().
     """
 
-    __slots__ = ("max_workers", "_queue", "_count", "_lock")
+    __slots__ = ("max_workers", "_queue", "_count", "_lock", "_all_procs")
 
     def __init__(self, max_workers: int | None = None):
         if max_workers is None:
@@ -136,6 +136,7 @@ class WorkerPool:
         self._queue: asyncio.Queue[asyncio.subprocess.Process] = asyncio.Queue()
         self._count = 0
         self._lock = asyncio.Lock()
+        self._all_procs: set[asyncio.subprocess.Process] = set()
 
     async def get_worker(
         self,
@@ -152,6 +153,7 @@ class WorkerPool:
             if proc is None and self._count < self.max_workers:
                 proc = await _start_worker_process(script, env, cwd)
                 self._count += 1
+                self._all_procs.add(proc)
         if proc is not None:
             return proc
         return await self._queue.get()
@@ -172,19 +174,25 @@ class WorkerPool:
         await _kill_process_tree(proc)
 
     async def shutdown(self) -> None:
-        """Kill all idle workers in the pool.
+        """Kill all workers (idle and in-use). Prevents orphan exec_runner processes on Ctrl+C.
 
         Call before the event loop closes to avoid
         'RuntimeError: Event loop is closed' warnings from
         subprocess transport ``__del__`` methods.
         """
+        procs = list(self._all_procs)
+        self._all_procs.clear()
+        self._count = 0
         while not self._queue.empty():
             try:
-                proc = self._queue.get_nowait()
+                self._queue.get_nowait()
             except asyncio.QueueEmpty:
                 break
-            self._count -= 1
-            await _kill_process_tree(proc)
+        for proc in procs:
+            try:
+                await _kill_process_tree(proc)
+            except Exception:
+                pass
 
 
 @functools.lru_cache(maxsize=1)

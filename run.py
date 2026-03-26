@@ -1,9 +1,11 @@
 import asyncio
+import os
 from datetime import datetime, timezone
 import time
 
 from dotenv import load_dotenv
 import hydra
+from hydra.core.hydra_config import HydraConfig
 from hydra.utils import instantiate
 from loguru import logger
 from omegaconf import DictConfig
@@ -132,6 +134,13 @@ Or set resume=true to continue with existing data:
     finally:
         logger.info("")
         logger.info("Starting cleanup...")
+        try:
+            from gigaevo.programs.stages.python_executors.wrapper import (
+                default_exec_runner_pool,
+            )
+            await default_exec_runner_pool().shutdown()
+        except Exception:  # pool may not exist or shutdown can fail
+            pass
         if redis_storage is not None:
             await redis_storage.close()
         if writer is not None:
@@ -149,6 +158,12 @@ def main(cfg: DictConfig) -> None:
     """Main entrypoint with Hydra configuration management."""
     load_dotenv()
 
+    hydra_out = HydraConfig.get().runtime.output_dir
+    os.environ.setdefault(
+        "MEDIQ_BATCH_STATE_FILE",
+        os.path.join(hydra_out, "batch_state.json"),
+    )
+
     log_file_path = setup_logger(
         log_dir=cfg.logging.log_dir,
         level=cfg.logging.level,
@@ -157,7 +172,7 @@ def main(cfg: DictConfig) -> None:
     )
     logger.info(
         "Experiment working directory: {}.",
-        hydra.core.hydra_config.HydraConfig.get().runtime.output_dir,
+        hydra_out,
     )
     logger.info(f"Log file: {log_file_path}")
     asyncio.run(run_experiment(cfg))

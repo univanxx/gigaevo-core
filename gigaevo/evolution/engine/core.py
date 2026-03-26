@@ -205,6 +205,20 @@ class EvolutionEngine:
 
         self.metrics.total_generations += 1
 
+        # Avoid busy-loop when archive is empty (no elites → no mutants → no work).
+        # Otherwise we spin thousands of iterations per second and flood logs.
+        if created == 0 and refreshed == 0:
+            if self.metrics.total_generations == 1 or (
+                self.metrics.total_generations % 100 == 0
+            ):
+                logger.warning(
+                    "[EvolutionEngine] Archive empty (no elites). "
+                    "Add initial programs in problem's initial_programs/ or wait for DAGs to finish. "
+                    "Sleeping {}s before next check.",
+                    self.config.loop_interval,
+                )
+            await asyncio.sleep(self.config.loop_interval)
+
     async def _await_idle(self) -> None:
         """Block until there are no programs in QUEUED or RUNNING."""
         while await self._has_active_dags():
