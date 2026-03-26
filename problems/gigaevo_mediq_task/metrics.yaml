@@ -7,7 +7,7 @@ specs:
     lower_bound: 0.01
     upper_bound: 1.0
     include_in_prompts: true
-    significant_change: 0.01
+    significant_change: 0.05
     sentinel_value: 0.0
   tokens_count:
     description: Average number of tokens used by doctor during consultation.
@@ -15,7 +15,7 @@ specs:
     is_primary: false
     higher_is_better: false
     lower_bound: 0.0
-    upper_bound: 1000.0
+    upper_bound: 2000.0
     include_in_prompts: true
     significant_change: 20.0
     sentinel_value: 20000.0

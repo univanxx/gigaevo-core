@@ -50,13 +50,32 @@ You are encouraged to:
 WHAT MUST BE PRESERVED
 
 - The evaluation loop must remain compatible with run_mediq(...)
-- Input/output interface of the prediction entrypoint
+- The entrypoint function signature must accept an optional context argument: def entrypoint(context=None)
+  The context is provided by the evolution framework and must be forwarded to run_mediq as seed:
+  seed = context.get("seed") if context else None; return run_mediq(CustomExpert, seed=seed, program_params=PROGRAM_PARAMS)
 - Expert subclass respond() interface
 - Each question response must contain exactly one atomic question string
 - Final answer must be exactly one letter: A, B, C, or D (no additional text)
 - Questions must be medically relevant and non-repetitive
 - Expert must not hallucinate diagnoses outside the provided options
-- Problem-runner hyperparameters (e.g., max_questions in the helper Args) must be kept fixed as stated in the environment settings
+
+
+PROGRAM_PARAMS — MUTABLE HYPERPARAMETERS WITH STRICT RANGES
+
+Each program MUST define a top-level dict PROGRAM_PARAMS with exactly these keys.
+Values are integers. The program will CRASH if any value is outside the allowed range.
+
+  PROGRAM_PARAMS = {
+      "self_consistency": <int>,   # range [1, 3] — number of self-consistency iterations
+      "max_questions": <int>,      # range [1, 5] — maximum follow-up questions per case
+  }
+
+Rules:
+- PROGRAM_PARAMS must always be present and passed to run_mediq(..., program_params=PROGRAM_PARAMS).
+- You may change the VALUES within the allowed ranges above.
+- Do NOT remove keys, rename them, or add new keys.
+- Do NOT redefine these variables elsewhere in your code; use PROGRAM_PARAMS directly.
+- Values outside the ranges cause immediate ValueError — the run is aborted, no score.
 
 
 FAILURE MODES
