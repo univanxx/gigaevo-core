@@ -3,6 +3,7 @@ import os
 import sys
 import logging
 import re
+import time
 from typing import Dict, List, Optional, Tuple
 import random
 
@@ -31,7 +32,7 @@ MAX_CASES = 50
 
 PROGRAM_PARAM_RANGES = {
     "self_consistency": (1, 3),
-    "max_questions": (1, 5),
+    "max_questions": (1, 8),
 }
 
 # ---------------------------------------------------------------------------
@@ -167,13 +168,7 @@ class BatchComposer:
         rng = random.Random(iteration)
         random_indices = rng.sample(remaining, k=min(random_needed, len(remaining)))
 
-        batch = anchor_indices + hard_indices + random_indices
-
-        log_info(
-            f"[BatchComposer] iter={iteration} "
-            f"anchor={len(anchor_indices)} hard={len(hard_indices)} "
-            f"random={len(random_indices)} total={len(batch)}"
-        )
+        batch = (anchor_indices + hard_indices + random_indices)[: self.batch_size]
         return batch
 
     def update_results(
@@ -220,6 +215,29 @@ models = {}
 
 _expert_responses: List[str] = []
 
+# ---------------------------------------------------------------------------
+# Per-request timing (TTFT, tok/s) instrumentation
+# ---------------------------------------------------------------------------
+_CURRENT_CASE_ID: Optional[int] = None
+_CURRENT_CASE_CALL_IDX: int = 0
+_TIMING_EVENTS_BY_CASE: dict[int, list[dict]] = {}
+
+
+def timing_set_current_case(case_id: Optional[int]) -> None:
+    """Set active case id for subsequent model calls."""
+    global _CURRENT_CASE_ID, _CURRENT_CASE_CALL_IDX
+    _CURRENT_CASE_ID = case_id
+    _CURRENT_CASE_CALL_IDX = 0
+
+
+def timing_get_and_clear_case_events(case_id: int) -> list[dict]:
+    """Return and clear accumulated timing events for a case."""
+    return _TIMING_EVENTS_BY_CASE.pop(case_id, [])
+
+
+def _timing_enabled() -> bool:
+    return os.environ.get("MEDIQ_TIMING", "0") in ("1", "true", "True", "yes", "YES")
+
 
 class ModelCacheHTTP:
     """ModelCache that uses vLLM server via OpenAI-compatible HTTP API."""
@@ -249,21 +267,129 @@ class ModelCacheHTTP:
         max_tokens = self.args.get("max_tokens")
         top_p = self.args.get("top_p")
         frequency_penalty = self.args.get("frequency_penalty", 0)
-        presence_penalty = self.args.get("presense_penalty", 0)
+        presence_penalty = self.args.get("presence_penalty", 0)
 
         try:
-            response = self.client.chat.completions.create(
-                model=self.model_name,
-                messages=messages,
-                temperature=temperature,
-                max_tokens=max_tokens,
-                top_p=top_p,
-                frequency_penalty=frequency_penalty,
-                presence_penalty=presence_penalty,
-            )
-            if not response.choices:
-                raise RuntimeError(f"[PROVIDER ERROR, not a mutant bug] Empty choices in response: {response}")
-            response_text = response.choices[0].message.content
+            timing = _timing_enabled()
+            if timing:
+                # Streaming path: implement create_with_ttft_tps() logic (simplified).
+                start_time = time.perf_counter()
+                first_token_time: Optional[float] = None
+                end_time: Optional[float] = None
+
+                text_parts: list[str] = []
+                usage = None
+                finish_reason = None
+                system_fingerprint = None
+                response_id = None
+                model_name = None
+
+                stream = self.client.chat.completions.create(
+                    model=self.model_name,
+                    messages=messages,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                    top_p=top_p,
+                    frequency_penalty=frequency_penalty,
+                    presence_penalty=presence_penalty,
+                    stream=True,
+                    stream_options={"include_usage": True},
+                )
+                for chunk in stream:
+                    end_time = time.perf_counter()
+
+                    if response_id is None:
+                        response_id = getattr(chunk, "id", None)
+                    if model_name is None:
+                        model_name = getattr(chunk, "model", None)
+                    if system_fingerprint is None:
+                        system_fingerprint = getattr(chunk, "system_fingerprint", None)
+
+                    # Usage may arrive even when choices are empty (provider-dependent).
+                    chunk_usage = getattr(chunk, "usage", None)
+                    if chunk_usage is not None:
+                        usage = chunk_usage
+
+                    if not getattr(chunk, "choices", None):
+                        continue
+
+                    choice = chunk.choices[0]
+                    if getattr(choice, "finish_reason", None) is not None:
+                        finish_reason = choice.finish_reason
+
+                    delta = getattr(choice, "delta", None)
+                    piece = getattr(delta, "content", None) if delta is not None else None
+                    if not piece:
+                        continue
+
+                    if first_token_time is None:
+                        first_token_time = time.perf_counter()
+
+                    text_parts.append(piece)
+
+                if end_time is None:
+                    end_time = time.perf_counter()
+
+                response_text = "".join(text_parts)
+
+                if first_token_time is None:
+                    ttft_s = None
+                    tok_per_s = None
+                    completion_tokens = 0
+                    usage_json = None
+                    generation_s = None
+                    total_s = end_time - start_time
+                else:
+                    ttft_s = first_token_time - start_time
+                    generation_time = end_time - first_token_time
+                    completion_tokens = getattr(usage, "completion_tokens", None)
+                    prompt_tokens = getattr(usage, "prompt_tokens", None)
+                    total_tokens = getattr(usage, "total_tokens", None)
+                    usage_json = {
+                        "prompt_tokens": int(prompt_tokens) if isinstance(prompt_tokens, (int, float)) else None,
+                        "completion_tokens": int(completion_tokens) if isinstance(completion_tokens, (int, float)) else None,
+                        "total_tokens": int(total_tokens) if isinstance(total_tokens, (int, float)) else None,
+                    }
+                    generation_s = generation_time
+                    total_s = end_time - start_time
+                    tok_per_s = (
+                        (completion_tokens / generation_time)
+                        if isinstance(completion_tokens, (int, float))
+                        else None
+                    )
+
+                # Save per-call timing event, attached to current case id if set.
+                global _CURRENT_CASE_CALL_IDX
+                event = {
+                    "ts": time.time(),
+                    "case_id": _CURRENT_CASE_ID,
+                    "call_idx": _CURRENT_CASE_CALL_IDX,
+                    "model": self.model_name,
+                    "is_patient": self.model_name == MEDIQ_PATIENT_MODEL,
+                    "ttft_s": ttft_s,
+                    "generation_s": generation_s,
+                    "total_s": total_s,
+                    "prompt_tokens": None if usage_json is None else usage_json.get("prompt_tokens"),
+                    "completion_tokens": None if usage_json is None else usage_json.get("completion_tokens"),
+                    "total_tokens": None if usage_json is None else usage_json.get("total_tokens"),
+                    "tok_per_s": tok_per_s,
+                }
+                _CURRENT_CASE_CALL_IDX += 1
+                if _CURRENT_CASE_ID is not None:
+                    _TIMING_EVENTS_BY_CASE.setdefault(int(_CURRENT_CASE_ID), []).append(event)
+            else:
+                response = self.client.chat.completions.create(
+                    model=self.model_name,
+                    messages=messages,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                    top_p=top_p,
+                    frequency_penalty=frequency_penalty,
+                    presence_penalty=presence_penalty,
+                )
+                if not response.choices:
+                    raise RuntimeError(f"[PROVIDER ERROR, not a mutant bug] Empty choices in response: {response}")
+                response_text = response.choices[0].message.content
         except Exception as e:
             log_info(f"[{self.model_name}][ERROR]: {e}", type="error")
             raise
@@ -459,6 +585,7 @@ def run_patient_interaction(expert_class, patient_class, args, sample):
                 "options": sample["options"],
                 "context": sample["context"],
                 "facts": patient_system.facts, # if the FactSelectPatient patient module is used, this will store the atomic facts the patient used to answer questions for reproducibility
+                "forced_final": False,
             }
             return expert_decision, patient_system.get_questions(), patient_system.get_answers(), temp_additional_info, sample_info
         
@@ -479,6 +606,7 @@ def run_patient_interaction(expert_class, patient_class, args, sample):
         "options": sample["options"],
         "context": sample["context"],
         "facts": patient_system.facts,  # if the FactSelectPatient patient module is used, this will store the atomic facts the patient used to answer questions for reproducibility
+        "forced_final": True,
     }
 
     return (
@@ -684,6 +812,7 @@ def run_mediq(expert_class, seed=None, program_params=None) -> Tuple[List, List[
 
     data_path = DEFAULT_DATA_PATH
     max_cases = MAX_CASES
+    print(f"max_cases: {max_cases}")
     
     args = Args(program_params=program_params)
     patient_data = load_data(data_path)
@@ -707,6 +836,7 @@ def run_mediq(expert_class, seed=None, program_params=None) -> Tuple[List, List[
     case_ids = []
     ground_truth = []
     all_expert_responses: List[List[str]] = []
+    forced_final_flags: List[bool] = []
     for i, sample in enumerate(patient_data):
         _expert_responses.clear()
         letter_choice, questions, answers, temp_additional_info, sample_info = run_patient_interaction(
@@ -727,6 +857,7 @@ def run_mediq(expert_class, seed=None, program_params=None) -> Tuple[List, List[
         case_ids.append(i)
         ground_truth.append(sample["answer_idx"])
         all_expert_responses.append(list(_expert_responses))
+        forced_final_flags.append(sample_info["forced_final"])
 
     if composer is not None and batch_indices is not None and seed is not None:
         correct_mask = [d == gt for d, gt in zip(diagnoses, ground_truth)]
@@ -735,6 +866,7 @@ def run_mediq(expert_class, seed=None, program_params=None) -> Tuple[List, List[
     run_metadata = {
         "program_params": {"max_questions": args.max_questions, "self_consistency": args.self_consistency},
         "expert_responses": all_expert_responses,
+        "forced_final": forced_final_flags,
     }
     return dialogues, diagnoses, case_ids, ground_truth, run_metadata
 

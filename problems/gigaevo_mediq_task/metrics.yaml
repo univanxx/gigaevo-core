@@ -9,6 +9,16 @@ specs:
     include_in_prompts: true
     significant_change: 0.05
     sentinel_value: 0.0
+  lineage_blended_fitness:
+    description: Blend of raw accuracy with exponentially weighted ancestor fitness (same formula as before fitness was raw-only); equals raw when no ancestors.
+    decimals: 5
+    is_primary: false
+    higher_is_better: true
+    lower_bound: 0.01
+    upper_bound: 1.0
+    include_in_prompts: false
+    significant_change: 0.05
+    sentinel_value: 0.0
   tokens_count:
     description: Average number of tokens used by doctor during consultation.
     decimals: 2
@@ -17,8 +27,28 @@ specs:
     lower_bound: 0.0
     upper_bound: 2000.0
     include_in_prompts: true
-    significant_change: 20.0
+    significant_change: 100.0
     sentinel_value: 20000.0
+  forced_final_rate:
+    description: Fraction of cases where the expert had to force a final answer (exceeding the cap in validate marks is_valid=0).
+    decimals: 5
+    is_primary: false
+    higher_is_better: false
+    lower_bound: 0.0
+    upper_bound: 1.0
+    include_in_prompts: false
+    significant_change: 0.05
+    sentinel_value: 1.0
+  ancestor_fitness_gap:
+    description: Weighted ancestor fitness minus raw accuracy on this run; large positive means a sharp drop vs lineage (triggers is_valid=0 when above threshold). Zero if no ancestor fitness is available.
+    decimals: 5
+    is_primary: false
+    higher_is_better: false
+    lower_bound: -1.0
+    upper_bound: 1.0
+    include_in_prompts: true
+    significant_change: 0.05
+    sentinel_value: -1.0
   is_valid:
     description: Whether the program is valid (1 valid, 0 invalid)
     decimals: 0

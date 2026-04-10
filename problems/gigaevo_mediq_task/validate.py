@@ -2,10 +2,12 @@
 Computes accuracy and token usage from doctor-patient dialogues.
 
 When called with an evolution-aware context (ancestor_metrics), applies:
-  - Exponentially weighted ancestor fitness for a smoother family-level score.
-  - Delta-based validity gate: if the mutant's raw fitness deviates from the
-    weighted ancestor average by more than FITNESS_DELTA_THRESHOLD, the
-    solution is marked invalid (is_valid=0) to suppress noise.
+  - ``fitness`` is raw diagnostic accuracy; ``lineage_blended_fitness`` blends
+    current accuracy with exponentially weighted ancestor ``fitness`` (for logging).
+  - Delta-based validity gate: if raw fitness is below the weighted ancestor
+    average by more than FITNESS_DELTA_THRESHOLD, the solution is marked invalid
+    (is_valid=0) to suppress noise.
+  - Forced-final cap: the fraction of cases ending in a forced final answer.
 """
 
 from typing import Dict, List, Optional
@@ -20,12 +22,15 @@ EXP_DECAY: float = 0.7
    Weight of ancestor at depth *i* is ``decay ** i``."""
 
 ANCESTOR_WEIGHT: float = 0.3
-"""Fraction of effective fitness attributed to the weighted ancestor average.
-   ``effective = (1 - ANCESTOR_WEIGHT) * current + ANCESTOR_WEIGHT * ancestor_avg``."""
+"""Weight on the weighted ancestor average in ``lineage_blended_fitness``.
+   ``blend = (1 - ANCESTOR_WEIGHT) * raw + ANCESTOR_WEIGHT * ancestor_avg``."""
 
 FITNESS_DELTA_THRESHOLD: float = 0.15
 """Maximum allowed absolute difference between current fitness and the
    weighted ancestor average.  Exceeding this marks the mutant as invalid."""
+
+# FORCED_FINAL_THRESHOLD: float = 0.5
+# """Maximum allowed fraction of forced final answers."""
 
 # ---------------------------------------------------------------------------
 # Tokenizer (lazy-loaded)
@@ -81,15 +86,15 @@ def _weighted_ancestor_fitness(
     return weighted_sum / total_weight
 
 
-def _compute_effective_fitness(
-    current: float,
+def _compute_lineage_blended_fitness(
+    raw: float,
     ancestor_avg: Optional[float],
     ancestor_weight: float = ANCESTOR_WEIGHT,
 ) -> float:
-    """Blend current fitness with weighted ancestor average."""
+    """Blend raw accuracy with weighted ancestor average of fitness."""
     if ancestor_avg is None:
-        return current
-    return (1.0 - ancestor_weight) * current + ancestor_weight * ancestor_avg
+        return raw
+    return (1.0 - ancestor_weight) * raw + ancestor_weight * ancestor_avg
 
 
 # ---------------------------------------------------------------------------
@@ -116,6 +121,12 @@ def validate(context_or_data, data=None) -> Dict[str, float]:
             f"Number of cases for predictions and ground truth must match! "
             f"Got {len(diagnoses)} for predictions, should be {len(ground_truth)}"
         )
+
+    n_cases = len(ground_truth)
+    forced_flags = run_metadata["forced_final"]
+    forced_final_rate = (
+        sum(1 for x in forced_flags if x) / n_cases if n_cases > 0 else 0.0
+    )
 
     tokenizer = _get_tokenizer()
     correct_answs = 0
@@ -147,17 +158,23 @@ def validate(context_or_data, data=None) -> Dict[str, float]:
 
     ancestor_avg = _weighted_ancestor_fitness(ancestor_metrics, key="fitness")
 
-    effective_fitness = _compute_effective_fitness(raw_fitness, ancestor_avg)
+    lineage_blended = _compute_lineage_blended_fitness(raw_fitness, ancestor_avg)
 
-    # Delta-based validity gate
-    is_valid: int = 1
+    ancestor_fitness_gap = 0.0
     if ancestor_avg is not None:
-        delta = ancestor_avg - raw_fitness
-        if delta > FITNESS_DELTA_THRESHOLD:
-            is_valid = 0
+        ancestor_fitness_gap = ancestor_avg - raw_fitness
+
+    is_valid = 1.0
+    # if forced_final_rate > FORCED_FINAL_THRESHOLD:
+    #     is_valid = 0.0
+    if ancestor_avg is not None and ancestor_fitness_gap > FITNESS_DELTA_THRESHOLD:
+        is_valid = 0.0
 
     return {
-        "fitness": effective_fitness,
-        "tokens_count": tokens_count,
+        "fitness": float(raw_fitness),
+        "lineage_blended_fitness": float(lineage_blended),
+        "tokens_count": float(tokens_count),
+        "forced_final_rate": float(forced_final_rate),
+        "ancestor_fitness_gap": float(ancestor_fitness_gap),
         "is_valid": is_valid,
     }
