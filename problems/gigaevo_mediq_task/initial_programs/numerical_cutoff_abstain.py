@@ -3,11 +3,11 @@ from typing import List, Tuple
 
 PROGRAM_PARAMS = {
     "self_consistency": 3,
-    "max_questions": 6,
+    "max_questions": 8,
 }
 
 
-PROB_THRESHOLD = 0.8
+PROB_THRESHOLD = 0.2
 
 
 expert_system = {

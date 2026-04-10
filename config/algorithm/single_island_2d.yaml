@@ -26,8 +26,8 @@ behavior_space:
     - ${primary_bounds}
     - ${tokens_count_bounds}
   resolutions:
+    - 50
     - 100
-    - 150
   binning_types:
     - ${binning_type}
     - linear
